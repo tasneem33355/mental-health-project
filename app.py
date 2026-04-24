@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(__file__))
 import re, pickle, warnings
 import numpy as np
 import streamlit as st
-import torch
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from tensorflow.keras.models import load_model
 from deep_translator import GoogleTranslator
