@@ -25,7 +25,7 @@ def load_model():
     return tokenizer, model
 
 tokenizer, model = load_model()
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 from deep_translator import GoogleTranslator
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
