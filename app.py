@@ -129,15 +129,20 @@ CAUSE_AR = {
 # ── LOAD MODELS ───────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_xlmr():
-    import pathlib, os
-    path = str(pathlib.Path(__file__).parent / "mental_xlmr_final")
-    # Windows fix: convert to forward slashes
-    path = path.replace("\\", "/")
-    tokenizer = AutoTokenizer.from_pretrained(path, local_files_only=True)
-    model     = AutoModelForSequenceClassification.from_pretrained(path, local_files_only=True)
-    model.eval()
-    with open(pathlib.Path(__file__).parent / "mental_xlmr_final" / "label_encoder.pkl", "rb") as f:
+    from huggingface_hub import hf_hub_download
+    import pickle, os
+    
+    model_id  = "xlm-roberta-base"
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    model     = AutoModelForSequenceClassification.from_pretrained(
+        model_id, num_labels=3
+    )
+    
+    le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
+    with open(le_path, "rb") as f:
         le = pickle.load(f)
+    
+    model.eval()
     return tokenizer, model, le
 
 @st.cache_resource
