@@ -25,7 +25,6 @@ def load_model():
     return tokenizer, model
 
 tokenizer, model = load_model()
-from keras.models import load_model
 from deep_translator import GoogleTranslator
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -145,14 +144,22 @@ def load_xlmr():
 
 @st.cache_resource
 def load_survey():
-    import pathlib
-    base   = pathlib.Path(__file__).parent
-    model  = load_model(str(base / "mental_model.h5"), compile=False)
-    scaler = pickle.load(open(str(base / "scaler.pkl"), "rb"))
-    return model, scaler
+    import pickle, numpy as np
+    scaler  = pickle.load(open(os.path.join(os.path.dirname(__file__), "scaler.pkl"), "rb"))
+    weights = pickle.load(open(os.path.join(os.path.dirname(__file__), "model_weights.pkl"), "rb"))
+
+    def predict(x):
+        for w in weights:
+            if len(w) == 2:
+                x = np.dot(x, w[0]) + w[1]
+                x = np.maximum(0, x)  # ReLU
+        x = np.exp(x) / np.sum(np.exp(x))  # Softmax
+        return x
+
+    return scaler, predict
 
 tokenizer, xlmr_model, le = load_xlmr()
-survey_model, scaler       = load_survey()
+scaler, survey_predict = load_survey()
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
 def clean_text(text):
@@ -178,8 +185,7 @@ def predict_text(text: str) -> dict:
 
 def predict_survey(answers: list) -> dict:
     data = scaler.transform(np.array(answers).reshape(1, -1))
-    pred = survey_model.predict(data, verbose=0)[0]
-    # output order from your model: [depression, anxiety, stress]
+    pred = survey_predict(data)[0]
     return {
         "depression": round(float(pred[0]), 4),
         "anxiety":    round(float(pred[1]), 4),
