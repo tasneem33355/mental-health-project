@@ -1,11 +1,8 @@
 streamlit
 transformers
 torch
-keras
-tf-keras
 scikit-learn
 numpy
 deep-translator
 sentencepiece
-protobuf
 huggingface_hub
