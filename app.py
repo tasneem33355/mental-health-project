@@ -129,19 +129,12 @@ CAUSE_AR = {
 # ── LOAD MODELS ───────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_xlmr():
-    from huggingface_hub import hf_hub_download
     import pickle, os
-    
-    model_id  = "xlm-roberta-base"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model     = AutoModelForSequenceClassification.from_pretrained(
-        model_id, num_labels=3
-    )
-    
-    le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
+    tokenizer = AutoTokenizer.from_pretrained("tasneem33355/mental-xlmr")
+    model     = AutoModelForSequenceClassification.from_pretrained("tasneem33355/mental-xlmr")
+    le_path   = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
     with open(le_path, "rb") as f:
         le = pickle.load(f)
-    
     model.eval()
     return tokenizer, model, le
 
