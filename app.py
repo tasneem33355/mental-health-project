@@ -18,6 +18,13 @@ import numpy as np
 import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+@st.cache_resource
+def load_model():
+    tokenizer = AutoTokenizer.from_pretrained("YOUR_MODEL_NAME")
+    model = AutoModelForSequenceClassification.from_pretrained("YOUR_MODEL_NAME")
+    return tokenizer, model
+
+tokenizer, model = load_model()
 from tensorflow.keras.models import load_model
 from deep_translator import GoogleTranslator
 import sys, os
