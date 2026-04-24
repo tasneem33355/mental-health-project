@@ -130,9 +130,14 @@ CAUSE_AR = {
 @st.cache_resource
 def load_xlmr():
     import pickle, os
-    tokenizer = AutoTokenizer.from_pretrained("tasneem33355/mental-xlmr")
-    model     = AutoModelForSequenceClassification.from_pretrained("tasneem33355/mental-xlmr")
-    le_path   = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
+    token = st.secrets["HF_TOKEN"]
+    tokenizer = AutoTokenizer.from_pretrained(
+        "tasneem33355/mental-xlmr", token=token
+    )
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "tasneem33355/mental-xlmr", token=token
+    )
+    le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
     with open(le_path, "rb") as f:
         le = pickle.load(f)
     model.eval()
