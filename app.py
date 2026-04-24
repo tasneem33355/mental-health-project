@@ -20,8 +20,8 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 @st.cache_resource
 def load_model():
-    tokenizer = AutoTokenizer.from_pretrained("YOUR_MODEL_NAME")
-    model = AutoModelForSequenceClassification.from_pretrained("YOUR_MODEL_NAME")
+    tokenizer = AutoTokenizer.from_pretrained("tasneem33355/mental-xlmr")
+    model = AutoModelForSequenceClassification.from_pretrained("tasneem33355/mental-xlmr")
     return tokenizer, model
 
 tokenizer, model = load_model()
