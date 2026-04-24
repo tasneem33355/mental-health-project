@@ -1,7 +1,8 @@
 streamlit
 transformers
 torch
-tensorflow-cpu
+keras
+tf-keras
 scikit-learn
 numpy
 deep-translator
