@@ -13,6 +13,28 @@ class _SigninScreenState extends State<SigninScreen> {
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
 
+  String? _emailError;
+  String? _passwordError;
+
+  void _login() {
+    setState(() {
+      final emailText = _emailCtrl.text.trim();
+      if (emailText.isEmpty) {
+        _emailError = 'you must enter the Email';
+      } else if (!emailText.endsWith('@gmail.com')) {
+        _emailError = 'Email must end with @gmail.com';
+      } else {
+        _emailError = null;
+      }
+      
+      _passwordError = _passwordCtrl.text.trim().isEmpty ? 'you must enter the Password' : null;
+    });
+
+    if (_emailError == null && _passwordError == null) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
+
   @override
   void dispose() {
     _emailCtrl.dispose();
@@ -81,10 +103,19 @@ class _SigninScreenState extends State<SigninScreen> {
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(color: AppTheme.textWhite),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Email or Phone Number',
-                    prefixIcon:
-                        Icon(Icons.person_outline, color: AppTheme.textDimmed, size: 20),
+                    errorText: _emailError,
+                    errorStyle: const TextStyle(color: AppTheme.red),
+                    prefixIcon: const Icon(Icons.person_outline, color: AppTheme.textDimmed, size: 20),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -94,6 +125,8 @@ class _SigninScreenState extends State<SigninScreen> {
                   style: const TextStyle(color: AppTheme.textWhite),
                   decoration: InputDecoration(
                     hintText: 'Password',
+                    errorText: _passwordError,
+                    errorStyle: const TextStyle(color: AppTheme.red),
                     prefixIcon: const Icon(Icons.lock_outline,
                         color: AppTheme.textDimmed, size: 20),
                     suffixIcon: IconButton(
@@ -105,6 +138,14 @@ class _SigninScreenState extends State<SigninScreen> {
                         size: 20,
                       ),
                       onPressed: () => setState(() => _obscure = !_obscure),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                   ),
                 ),
@@ -129,8 +170,7 @@ class _SigninScreenState extends State<SigninScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/home'),
+                    onPressed: _login,
                     child: const Text('Login'),
                   ),
                 ),

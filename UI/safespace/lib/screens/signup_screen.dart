@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
 import '../main.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -14,6 +17,36 @@ class _SignupScreenState extends State<SignupScreen> {
   final _phoneCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
+
+  String? _nameError;
+  String? _emailError;
+  String? _phoneError;
+  String? _passwordError;
+
+  void _createAccount() {
+    setState(() {
+      _nameError = _nameCtrl.text.trim().isEmpty ? 'you must enter the Name' : null;
+      
+      final emailText = _emailCtrl.text.trim();
+      if (emailText.isEmpty) {
+        _emailError = 'you must enter the Email';
+      } else if (!emailText.endsWith('@gmail.com')) {
+        _emailError = 'Email must end with @gmail.com';
+      } else {
+        _emailError = null;
+      }
+
+      _phoneError = _phoneCtrl.text.trim().isEmpty ? 'you must enter the Phone Number' : null;
+      _passwordError = _passwordCtrl.text.trim().isEmpty ? 'you must enter the Password' : null;
+    });
+
+    if (_nameError == null &&
+        _emailError == null &&
+        _phoneError == null &&
+        _passwordError == null) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
 
   @override
   void dispose() {
@@ -85,6 +118,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   controller: _nameCtrl,
                   hint: 'Name',
                   icon: Icons.person_outline,
+                  errorText: _nameError,
                 ),
                 const SizedBox(height: 14),
                 _buildField(
@@ -92,13 +126,47 @@ class _SignupScreenState extends State<SignupScreen> {
                   hint: 'Email',
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
+                  errorText: _emailError,
                 ),
                 const SizedBox(height: 14),
-                _buildField(
+                IntlPhoneField(
                   controller: _phoneCtrl,
-                  hint: 'Phone Number',
-                  icon: Icons.phone_outlined,
-                  keyboardType: TextInputType.phone,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+                  dropdownTextStyle: const TextStyle(color: AppTheme.textWhite, fontSize: 10),
+                  showDropdownIcon: true,
+                  dropdownIcon: const Icon(Icons.arrow_drop_down, color: AppTheme.textDimmed, size: 12),
+                  flagsButtonPadding: const EdgeInsets.only(left: 4, right: 0),
+                  showCountryFlag: true,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: InputDecoration(
+                    hintText: 'Phone Number',
+                    hintStyle: const TextStyle(color: AppTheme.textDimmed, fontSize: 13),
+                    counterText: '',
+                    errorText: _phoneError,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    errorStyle: const TextStyle(color: AppTheme.red),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                    ),
+                  ),
+                  initialCountryCode: 'EG',
+                  pickerDialogStyle: PickerDialogStyle(
+                    countryCodeStyle: const TextStyle(fontSize: 11),
+                    countryNameStyle: const TextStyle(fontSize: 11),
+                    searchFieldInputDecoration: InputDecoration(
+                      hintText: 'Search country',
+                      hintStyle: const TextStyle(color: AppTheme.textDimmed, fontSize: 11),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    ),
+                    listTilePadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 2),
+                    padding: const EdgeInsets.all(24),
+                  ),
                 ),
                 const SizedBox(height: 14),
                 _buildField(
@@ -106,6 +174,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   hint: 'Password',
                   icon: Icons.lock_outline,
                   obscure: _obscure,
+                  errorText: _passwordError,
                   suffix: IconButton(
                     icon: Icon(
                       _obscure
@@ -122,8 +191,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, '/home'),
+                    onPressed: _createAccount,
                     child: const Text('Create Account'),
                   ),
                 ),
@@ -195,6 +263,7 @@ class _SignupScreenState extends State<SignupScreen> {
     TextInputType? keyboardType,
     bool obscure = false,
     Widget? suffix,
+    String? errorText,
   }) {
     return TextField(
       controller: controller,
@@ -203,8 +272,18 @@ class _SignupScreenState extends State<SignupScreen> {
       style: const TextStyle(color: AppTheme.textWhite),
       decoration: InputDecoration(
         hintText: hint,
+        errorText: errorText,
+        errorStyle: const TextStyle(color: AppTheme.red),
         prefixIcon: Icon(icon, color: AppTheme.textDimmed, size: 20),
         suffixIcon: suffix,
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+        ),
       ),
     );
   }
