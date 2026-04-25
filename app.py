@@ -20,12 +20,11 @@ import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 @st.cache_resource
 def load_model():
-    tokenizer = AutoTokenizer.from_pretrained("YOUR_MODEL_NAME")
-    model = AutoModelForSequenceClassification.from_pretrained("YOUR_MODEL_NAME")
+    tokenizer = AutoTokenizer.from_pretrained("tasneem33355/mental-xlmr")
+    model = AutoModelForSequenceClassification.from_pretrained("tasneem33355/mental-xlmr")
     return tokenizer, model
 
 tokenizer, model = load_model()
-from tensorflow.keras.models import load_model
 from deep_translator import GoogleTranslator
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -129,32 +128,38 @@ CAUSE_AR = {
 # ── LOAD MODELS ───────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_xlmr():
-    from huggingface_hub import hf_hub_download
     import pickle, os
-    
-    model_id  = "xlm-roberta-base"
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    model     = AutoModelForSequenceClassification.from_pretrained(
-        model_id, num_labels=3
+    token = st.secrets["HF_TOKEN"]
+    tokenizer = AutoTokenizer.from_pretrained(
+        "tasneem33355/mental-xlmr", token=token
     )
-    
+    model = AutoModelForSequenceClassification.from_pretrained(
+        "tasneem33355/mental-xlmr", token=token
+    )
     le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
     with open(le_path, "rb") as f:
         le = pickle.load(f)
-    
     model.eval()
     return tokenizer, model, le
 
 @st.cache_resource
 def load_survey():
-    import pathlib
-    base   = pathlib.Path(__file__).parent
-    model  = load_model(str(base / "mental_model.h5"), compile=False)
-    scaler = pickle.load(open(str(base / "scaler.pkl"), "rb"))
-    return model, scaler
+    import pickle, numpy as np
+    scaler  = pickle.load(open(os.path.join(os.path.dirname(__file__), "scaler.pkl"), "rb"))
+    weights = pickle.load(open(os.path.join(os.path.dirname(__file__), "model_weights.pkl"), "rb"))
+
+    def predict(x):
+        for w in weights:
+            if len(w) == 2:
+                x = np.dot(x, w[0]) + w[1]
+                x = np.maximum(0, x)  # ReLU
+        x = np.exp(x) / np.sum(np.exp(x))  # Softmax
+        return x
+
+    return scaler, predict
 
 tokenizer, xlmr_model, le = load_xlmr()
-survey_model, scaler       = load_survey()
+scaler, survey_predict = load_survey()
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
 def clean_text(text):
@@ -180,8 +185,7 @@ def predict_text(text: str) -> dict:
 
 def predict_survey(answers: list) -> dict:
     data = scaler.transform(np.array(answers).reshape(1, -1))
-    pred = survey_model.predict(data, verbose=0)[0]
-    # output order from your model: [depression, anxiety, stress]
+    pred = survey_predict(data)[0]
     return {
         "depression": round(float(pred[0]), 4),
         "anxiety":    round(float(pred[1]), 4),
