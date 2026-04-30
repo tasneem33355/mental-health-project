@@ -61,42 +61,44 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
         ),
         centerTitle: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Mood Questionnaire',
-              style: TextStyle(
-                  color: AppTheme.textWhite,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Answer all three questions in one place with a calm, quick survey flow.',
-              style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
-            ),
-            const SizedBox(height: 24),
-
-            // Step cards
-            _buildStressCard(),
-            const SizedBox(height: 16),
-            _buildEnergyCard(),
-            const SizedBox(height: 16),
-            _buildSleepCard(),
-
-            const Spacer(),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Submit'),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Mood Questionnaire',
+                style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              const Text(
+                'Answer all three questions in one place with a calm, quick survey flow.',
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+              ),
+              const SizedBox(height: 24),
+
+              // Step cards
+              _buildStressCard(),
+              const SizedBox(height: 16),
+              _buildEnergyCard(),
+              const SizedBox(height: 16),
+              _buildSleepCard(),
+
+              const SizedBox(height: 32),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Submit'),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

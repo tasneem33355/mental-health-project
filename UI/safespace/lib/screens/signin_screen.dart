@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../data/app_state.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -31,6 +32,7 @@ class _SigninScreenState extends State<SigninScreen> {
     });
 
     if (_emailError == null && _passwordError == null) {
+      AppState.userPassword = _passwordCtrl.text;
       Navigator.pushReplacementNamed(context, '/home');
     }
   }

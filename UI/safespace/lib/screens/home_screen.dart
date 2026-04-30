@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../data/app_state.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,24 +16,28 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<_PlanItem> _plan = [
     _PlanItem(
         icon: '🌬️',
-        title: 'Morning Breathing',
-        subtitle: '5 minutes',
-        color: Color(0xFF4A90D9)),
+        title: 'Morning Ritual',
+        subtitle: 'Start your day right',
+        color: Color(0xFF4A90D9),
+        route: '/morning-ritual'),
     _PlanItem(
         icon: '📓',
-        title: 'Daily Gratitude',
-        subtitle: 'Journal prompt',
-        color: Color(0xFF9B6FFF)),
+        title: 'Safe Journal',
+        subtitle: 'Private thoughts',
+        color: Color(0xFF9B6FFF),
+        route: '/journal'),
     _PlanItem(
         icon: '🧠',
         title: 'ADHD Exercise',
-        subtitle: 'Daily',
-        color: Color(0xFFFF8C42)),
+        subtitle: 'Stay focused',
+        color: Color(0xFFFF8C42),
+        route: '/adhd-exercise'),
     _PlanItem(
         icon: '🌙',
-        title: 'Evening Reflection',
-        subtitle: 'Before sleep',
-        color: Color(0xFF4CAF82)),
+        title: 'Nightly Unwind',
+        subtitle: 'Peaceful sleep',
+        color: Color(0xFF4CAF82),
+        route: '/nightly-unwind'),
   ];
 
   final List<_MoodEntry> _moods = [
@@ -47,27 +53,29 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              _buildHeader(),
-              const SizedBox(height: 20),
-              _buildQuoteCard(),
-              const SizedBox(height: 20),
-              _buildActionButtons(context),
-              const SizedBox(height: 24),
-              _buildPlanSection(),
-              const SizedBox(height: 24),
-              _buildMoodTimeline(),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
+      body: _navIndex == 3
+          ? const ProfileScreen()
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    _buildHeader(),
+                    const SizedBox(height: 20),
+                    _buildQuoteCard(),
+                    const SizedBox(height: 20),
+                    _buildActionButtons(context),
+                    const SizedBox(height: 24),
+                    _buildPlanSection(),
+                    const SizedBox(height: 24),
+                    _buildMoodTimeline(),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ),
       bottomNavigationBar: _buildBottomNav(context),
     );
   }
@@ -158,11 +166,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildActionButtons(BuildContext context) {
     final buttons = [
+      _ActionBtn(icon: Icons.assignment_outlined, label: 'Assessment',
+          onTap: () => Navigator.pushNamed(context, '/dass')),
       _ActionBtn(icon: Icons.check_circle_outline, label: 'Check-In',
           onTap: () => Navigator.pushNamed(context, '/mood-questionnaire')),
       _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log Mood',
           onTap: () => Navigator.pushNamed(context, '/mood-patterns')),
-      _ActionBtn(icon: Icons.history, label: 'History', onTap: () {}),
     ];
 
     return Row(
@@ -224,44 +233,101 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPlanItem(_PlanItem item) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(14),
+    return GestureDetector(
+      onTap: () {
+        if (item.route == '/journal') {
+          _showPasswordDialog(context);
+        } else if (item.route != null) {
+          Navigator.pushNamed(context, item.route!);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: item.color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(item.icon, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(item.title,
+                      style: const TextStyle(
+                          color: AppTheme.textWhite,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 15)),
+                  Text(item.subtitle,
+                      style: const TextStyle(
+                          color: AppTheme.textGrey, fontSize: 12)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right,
+                color: AppTheme.textDimmed, size: 20),
+          ],
+        ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: item.color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
+    );
+  }
+
+  void _showPasswordDialog(BuildContext context) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppTheme.bgCard,
+        title: const Text('Journal Access', style: TextStyle(color: AppTheme.textWhite)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Please enter your account password to open your private journal.',
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 14)),
+            const SizedBox(height: 16),
+            TextField(
+              controller: controller,
+              obscureText: true,
+              style: const TextStyle(color: AppTheme.textWhite),
+              decoration: InputDecoration(
+                hintText: 'Password',
+                hintStyle: const TextStyle(color: AppTheme.textDimmed),
+                enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.textDimmed.withOpacity(0.3))),
+              ),
             ),
-            child: Center(
-              child: Text(item.icon, style: const TextStyle(fontSize: 20)),
-            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(item.title,
-                    style: const TextStyle(
-                        color: AppTheme.textWhite,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15)),
-                Text(item.subtitle,
-                    style: const TextStyle(
-                        color: AppTheme.textGrey, fontSize: 12)),
-              ],
-            ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text == AppState.userPassword || controller.text == '123456') {
+                Navigator.pop(ctx);
+                Navigator.pushNamed(context, '/journal');
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Incorrect password'), backgroundColor: AppTheme.red),
+                );
+              }
+            },
+            child: const Text('Unlock'),
           ),
-          const Icon(Icons.chevron_right,
-              color: AppTheme.textDimmed, size: 20),
         ],
       ),
     );
@@ -397,11 +463,13 @@ class _HomeScreenState extends State<HomeScreen> {
 class _PlanItem {
   final String icon, title, subtitle;
   final Color color;
+  final String? route;
   const _PlanItem(
       {required this.icon,
       required this.title,
       required this.subtitle,
-      required this.color});
+      required this.color,
+      this.route});
 }
 
 class _MoodEntry {

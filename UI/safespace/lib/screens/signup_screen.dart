@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import '../main.dart';
+import '../data/app_state.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -44,6 +45,7 @@ class _SignupScreenState extends State<SignupScreen> {
         _emailError == null &&
         _phoneError == null &&
         _passwordError == null) {
+      AppState.userPassword = _passwordCtrl.text;
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
