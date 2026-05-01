@@ -3,6 +3,7 @@ import '../main.dart';
 import '../data/dass_questions.dart';
 import '../data/app_state.dart';
 import 'dass_results_screen.dart';
+import '../services/api_service.dart';
 
 class DassQuestionnaireScreen extends StatefulWidget {
   const DassQuestionnaireScreen({super.key});
@@ -72,18 +73,43 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
       'Stress': stressScore,
     };
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DassResultsScreen(
-          scores: {
-            'Depression': depressionScore,
-            'Anxiety': anxietyScore,
-            'Stress': stressScore,
-          },
-        ),
-      ),
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
     );
+
+    // Prepare answers list (length 42)
+    List<int> surveyAnswers = List.generate(42, (i) => _answers[i] ?? 1);
+
+    ApiService.analyzeMentalHealth("I am finishing my DASS assessment.", surveyAnswers).then((result) {
+      Navigator.pop(context); // Remove loading
+      
+      AppState.lastDassResults = {
+        'Depression': depressionScore,
+        'Anxiety': anxietyScore,
+        'Stress': stressScore,
+      };
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DassResultsScreen(
+            scores: {
+              'Depression': depressionScore,
+              'Anxiety': anxietyScore,
+              'Stress': stressScore,
+            },
+          ),
+        ),
+      );
+    }).catchError((e) {
+      Navigator.pop(context); // Remove loading
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving to database: $e'), backgroundColor: AppTheme.red),
+      );
+    });
   }
 
   @override

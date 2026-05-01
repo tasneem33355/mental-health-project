@@ -12,6 +12,9 @@ import 'screens/dass_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/recommendation_screen.dart';
 import 'screens/journal_screen.dart';
+import 'screens/explore_screen.dart';
+import 'screens/wellness_screen.dart';
+import 'screens/bubble_pop_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -48,6 +51,7 @@ class SafespaceApp extends StatelessWidget {
         '/morning-ritual': (ctx) => const RecommendationScreen(timeOfDay: 'Morning'),
         '/nightly-unwind': (ctx) => const RecommendationScreen(timeOfDay: 'Evening'),
         '/journal': (ctx) => const JournalScreen(),
+        '/bubble-pop': (ctx) => const BubblePopScreen(),
       },
     );
   }

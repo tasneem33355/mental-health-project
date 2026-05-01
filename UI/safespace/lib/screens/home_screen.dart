@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../data/app_state.dart';
 import 'profile_screen.dart';
+import 'explore_screen.dart';
+import 'wellness_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -53,9 +55,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
-      body: _navIndex == 3
-          ? const ProfileScreen()
-          : SafeArea(
+      body: _navIndex == 1
+          ? const ExploreScreen()
+          : _navIndex == 2
+              ? const WellnessScreen()
+              : _navIndex == 3
+                  ? const ProfileScreen()
+                  : SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
