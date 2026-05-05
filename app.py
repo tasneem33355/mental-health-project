@@ -122,6 +122,7 @@ CAUSE_AR = {
 @st.cache_resource
 def load_xlmr():
     import pickle, os
+    model_id = os.getenv("HF_MODEL_ID", "AliSakr9997/Mental-XLMR-Model")
     token = None
     try:
         token = st.secrets.get("HF_TOKEN")
@@ -130,12 +131,21 @@ def load_xlmr():
     if not token:
         token = os.getenv("HF_TOKEN")
     kwargs = {"token": token} if token else {}
-    tokenizer = AutoTokenizer.from_pretrained(
-        "tasneem33355/mental-xlmr", **kwargs
+    local_dir = os.path.join(os.path.dirname(__file__), "mental_xlmr_final")
+    local_weights = any(
+        os.path.exists(os.path.join(local_dir, fname))
+        for fname in ("pytorch_model.bin", "model.safetensors")
     )
-    model = AutoModelForSequenceClassification.from_pretrained(
-        "tasneem33355/mental-xlmr", **kwargs
-    )
+    source = local_dir if local_weights else model_id
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(source, **kwargs)
+        model = AutoModelForSequenceClassification.from_pretrained(source, **kwargs)
+    except OSError:
+        st.error(
+            "Unable to load the XLM-R model. If the model is private, add a HF_TOKEN "
+            "secret in the Space settings or set HF_MODEL_ID to a public model."
+        )
+        st.stop()
     le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
     with open(le_path, "rb") as f:
         le = pickle.load(f)
