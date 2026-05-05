@@ -11,20 +11,16 @@ Files needed:
 Install:
   pip install streamlit transformers torch tensorflow scikit-learn deep-translator
 """
+
 import sys, os
 sys.path.append(os.path.dirname(__file__))
 import re, pickle, warnings
+
 import numpy as np
 import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-@st.cache_resource
-def load_model():
-    tokenizer = AutoTokenizer.from_pretrained("tasneem33355/mental-xlmr")
-    model = AutoModelForSequenceClassification.from_pretrained("tasneem33355/mental-xlmr")
-    return tokenizer, model
 
-tokenizer, model = load_model()
 from deep_translator import GoogleTranslator
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -129,13 +125,21 @@ CAUSE_AR = {
 @st.cache_resource
 def load_xlmr():
     import pickle, os
-    token = st.secrets["HF_TOKEN"]
+    token = None
+    try:
+        token = st.secrets.get("HF_TOKEN")
+    except Exception:
+        token = None
+    if not token:
+        token = os.getenv("HF_TOKEN")
+    kwargs = {"token": token} if token else {}
     tokenizer = AutoTokenizer.from_pretrained(
-        "tasneem33355/mental-xlmr", token=token
+        "tasneem33355/mental-xlmr", **kwargs
     )
     model = AutoModelForSequenceClassification.from_pretrained(
-        "tasneem33355/mental-xlmr", token=token
+        "tasneem33355/mental-xlmr", **kwargs
     )
+
     le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
     with open(le_path, "rb") as f:
         le = pickle.load(f)
