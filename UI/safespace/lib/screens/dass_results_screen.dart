@@ -3,8 +3,9 @@ import '../main.dart';
 
 class DassResultsScreen extends StatelessWidget {
   final Map<String, int> scores;
+  final Map<String, dynamic>? apiResult;
 
-  const DassResultsScreen({super.key, required this.scores});
+  const DassResultsScreen({super.key, required this.scores, this.apiResult});
 
   String _getLevel(String type, int score) {
     if (type == 'Depression') {
@@ -41,6 +42,13 @@ class DassResultsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Extract recommendations from API result
+    final recommendations = apiResult?['recommendations'];
+    final tipsEn = (recommendations?['tips_en'] as List?)?.cast<String>() ?? [];
+    final resourcesEn = (recommendations?['resources_en'] as List?)?.cast<String>() ?? [];
+    final referralEn = recommendations?['referral_en'] as String? ?? '';
+    final suicidalFlag = apiResult?['suicidal_flag'] as bool? ?? false;
+
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
@@ -62,12 +70,108 @@ class DassResultsScreen extends StatelessWidget {
               style: TextStyle(color: AppTheme.textGrey, fontSize: 16),
             ),
             const SizedBox(height: 32),
+
+            // Suicidal crisis warning
+            if (suicidalFlag)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.red.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.red.withOpacity(0.5), width: 2),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.warning_amber_rounded, color: AppTheme.red, size: 28),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Please Reach Out for Help',
+                            style: TextStyle(color: AppTheme.red, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Your responses indicate you may need immediate support. Please contact a mental health professional or crisis helpline.',
+                            style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
             _buildResultCard('Depression', scores['Depression'] ?? 0),
             const SizedBox(height: 20),
             _buildResultCard('Anxiety', scores['Anxiety'] ?? 0),
             const SizedBox(height: 20),
             _buildResultCard('Stress', scores['Stress'] ?? 0),
-            const SizedBox(height: 40),
+            const SizedBox(height: 32),
+
+            // Recommendations Section
+            if (tipsEn.isNotEmpty) ...[
+              const Text(
+                'Personalized Tips',
+                style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              ...tipsEn.map((tip) => _buildTipCard(tip)),
+              const SizedBox(height: 24),
+            ],
+
+            // Resources Section
+            if (resourcesEn.isNotEmpty) ...[
+              const Text(
+                'Helpful Resources',
+                style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              ...resourcesEn.map((resource) => _buildResourceCard(resource)),
+              const SizedBox(height: 24),
+            ],
+
+            // Referral Section
+            if (referralEn.isNotEmpty) ...[
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryPurple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.primaryPurple.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.local_hospital_outlined, color: AppTheme.accentPurple, size: 24),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Professional Guidance',
+                            style: TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            referralEn,
+                            style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+
+            // What does this mean section
             const Text(
               'What does this mean?',
               style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
@@ -87,6 +191,60 @@ class DassResultsScreen extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTipCard(String tip) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            child: const Icon(Icons.lightbulb_outline, color: AppTheme.yellow, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              tip,
+              style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResourceCard(String resource) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            child: const Icon(Icons.menu_book_outlined, color: AppTheme.accentPurple, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              resource,
+              style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.4),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -133,7 +291,7 @@ class DassResultsScreen extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
-                    value: score / 42, // Max possible score is 42 per scale (14 * 3)
+                    value: score / 56, // Max possible score is 56 per scale (14 * 4 with 5 options)
                     backgroundColor: AppTheme.bgDark,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     minHeight: 8,
@@ -142,7 +300,7 @@ class DassResultsScreen extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               Text(
-                '$score/42',
+                '$score/56',
                 style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
               ),
             ],

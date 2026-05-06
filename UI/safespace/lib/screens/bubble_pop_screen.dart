@@ -29,8 +29,8 @@ class _BubblePopScreenState extends State<BubblePopScreen> with TickerProviderSt
 
   void _addBubble() {
     final size = 40.0 + _random.nextDouble() * 60.0;
-    final left = _random.nextDouble() * 300;
-    final top = _random.nextDouble() * 600;
+    final leftPct = _random.nextDouble();
+    final topPct = _random.nextDouble();
     final color = [
       AppTheme.primaryPurple,
       AppTheme.lightPurple,
@@ -46,8 +46,8 @@ class _BubblePopScreenState extends State<BubblePopScreen> with TickerProviderSt
 
     _bubbles.add(_Bubble(
       id: DateTime.now().microsecondsSinceEpoch.toString() + _random.nextInt(1000).toString(),
-      left: left,
-      top: top,
+      left: leftPct,
+      top: topPct,
       size: size,
       color: color,
       controller: animationController,
@@ -123,8 +123,8 @@ class _BubblePopScreenState extends State<BubblePopScreen> with TickerProviderSt
           ...List.generate(_bubbles.length, (index) {
             final b = _bubbles[index];
             return Positioned(
-              left: b.left,
-              top: b.top,
+              left: b.left * (MediaQuery.of(context).size.width - 80),
+              top: b.top * (MediaQuery.of(context).size.height - 150) + 50,
               child: GestureDetector(
                 onTap: () => _popBubble(index),
                 child: ScaleTransition(

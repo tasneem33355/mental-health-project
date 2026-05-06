@@ -102,13 +102,24 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
               'Anxiety': anxietyScore,
               'Stress': stressScore,
             },
+            apiResult: result,
           ),
         ),
       );
     }).catchError((e) {
       Navigator.pop(context); // Remove loading
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error saving to database: $e'), backgroundColor: AppTheme.red),
+      // Still show results even if API fails (just without recommendations)
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DassResultsScreen(
+            scores: {
+              'Depression': depressionScore,
+              'Anxiety': anxietyScore,
+              'Stress': stressScore,
+            },
+          ),
+        ),
       );
     });
   }

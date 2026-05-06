@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import '../data/app_state.dart';
+import '../services/api_service.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -17,13 +18,15 @@ class _SigninScreenState extends State<SigninScreen> {
   String? _emailError;
   String? _passwordError;
 
-  void _login() {
+  bool _isLoading = false;
+
+  void _login() async {
     setState(() {
       final emailText = _emailCtrl.text.trim();
       if (emailText.isEmpty) {
         _emailError = 'you must enter the Email';
-      } else if (!emailText.endsWith('@gmail.com')) {
-        _emailError = 'Email must end with @gmail.com';
+      } else if (!emailText.contains('@')) {
+        _emailError = 'Please enter a valid email address';
       } else {
         _emailError = null;
       }
@@ -32,8 +35,27 @@ class _SigninScreenState extends State<SigninScreen> {
     });
 
     if (_emailError == null && _passwordError == null) {
-      AppState.userPassword = _passwordCtrl.text;
-      Navigator.pushReplacementNamed(context, '/home');
+      setState(() => _isLoading = true);
+      try {
+        final result = await ApiService.login(
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
+        );
+        AppState.userId = result['user_id'];
+        AppState.userEmail = result['email'];
+        AppState.userName = result['name'];
+        AppState.userPassword = _passwordCtrl.text.trim();
+        await AppState.saveUserInfo();
+        if (mounted) Navigator.pushReplacementNamed(context, '/home');
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$e'), backgroundColor: AppTheme.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -106,7 +128,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(color: AppTheme.textWhite),
                   decoration: InputDecoration(
-                    hintText: 'Email or Phone Number',
+                    hintText: 'Email',
                     errorText: _emailError,
                     errorStyle: const TextStyle(color: AppTheme.red),
                     prefixIcon: const Icon(Icons.person_outline, color: AppTheme.textDimmed, size: 20),
@@ -172,8 +194,10 @@ class _SigninScreenState extends State<SigninScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Login'),
+                    onPressed: _isLoading ? null : _login,
+                    child: _isLoading
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Login'),
                   ),
                 ),
                 const SizedBox(height: 24),

@@ -84,10 +84,10 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text('Good Morning,',
+          children: [
+            const Text('Good Morning,',
                 style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
-            Text('Ahmed',
+            Text(AppState.userName ?? 'Friend',
                 style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 24,
@@ -165,11 +165,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildActionButtons(BuildContext context) {
     final canCheckIn = AppState.canCheckIn;
     final buttons = [
-      _ActionBtn(icon: Icons.assignment_outlined, label: 'Assessment',
+      _ActionBtn(icon: Icons.assignment_outlined, label: 'DASS 42\nAssessment',
           onTap: () => Navigator.pushNamed(context, '/dass')),
       _ActionBtn(
           icon: canCheckIn ? Icons.check_circle_outline : Icons.check_circle,
-          label: canCheckIn ? 'Check-In' : 'Done Today',
+          label: canCheckIn ? 'Check-In' : 'Done\nToday',
           onTap: () {
             if (canCheckIn) {
               Navigator.pushNamed(context, '/mood-questionnaire').then((_) => setState(() {}));
@@ -179,8 +179,10 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             }
           }),
-      _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log Mood',
+      _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log\nMood',
           onTap: () => Navigator.pushNamed(context, '/mood-patterns')),
+      _ActionBtn(icon: Icons.psychology_outlined, label: 'NLP\nAI',
+          onTap: () => Navigator.pushNamed(context, '/nlp-prediction')),
     ];
 
     return Row(
@@ -203,9 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Icon(b.icon, color: AppTheme.accentPurple, size: 26),
                   const SizedBox(height: 8),
                   Text(b.label,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                           color: AppTheme.textWhite,
-                          fontSize: 12,
+                          fontSize: 11,
+                          height: 1.1,
                           fontWeight: FontWeight.w500)),
                 ],
               ),
@@ -396,7 +400,10 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => setState(() => goal.isDone = !goal.isDone),
+            onTap: () => setState(() {
+              goal.isDone = !goal.isDone;
+              AppState.updateGoals();
+            }),
             child: Container(
               width: 24,
               height: 24,

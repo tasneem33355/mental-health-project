@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../main.dart';
+import '../services/api_service.dart';
 import 'grounding_screen.dart';
 import 'box_breathing_screen.dart';
 import 'meditation_screen.dart';
@@ -12,6 +14,14 @@ class WellnessScreen extends StatefulWidget {
 }
 
 class _WellnessScreenState extends State<WellnessScreen> {
+  late Future<List<Map<String, dynamic>>> _historyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _historyFuture = ApiService.getHistory();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -26,6 +36,8 @@ class _WellnessScreenState extends State<WellnessScreen> {
               style: TextStyle(color: AppTheme.textWhite, fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
+
+
             
             // Wellness Tools
             const Text(
@@ -84,6 +96,12 @@ class _WellnessScreenState extends State<WellnessScreen> {
       ),
     );
   }
+
+
+
+
+
+
 
   Widget _buildMiniGameCard(BuildContext context, String emoji, String title, String subtitle, String? route) {
     return GestureDetector(

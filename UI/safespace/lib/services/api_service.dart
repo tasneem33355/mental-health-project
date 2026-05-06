@@ -1,10 +1,62 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../data/app_state.dart';
 
 class ApiService {
   static const String baseUrl = "https://alisakr9997-safespace.hf.space/api/v1";
 
-  // Connects to the main API for analyzing DASS-42 and text, which then auto-saves to PostgreSQL
+  // --- AUTH ---
+
+  /// Register a new user account
+  static Future<Map<String, dynamic>> signup(String name, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/signup'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "name": name,
+          "email": email,
+          "password": password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final body = jsonDecode(response.body);
+        throw Exception(body["detail"] ?? "Signup failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("$e");
+    }
+  }
+
+  /// Login with email and password
+  static Future<Map<String, dynamic>> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/auth/login'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email,
+          "password": password,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        final body = jsonDecode(response.body);
+        throw Exception(body["detail"] ?? "Login failed: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("$e");
+    }
+  }
+
+  // --- ANALYSIS ---
+
+  /// Connects to the main API for analyzing DASS-42 and text, which then auto-saves to PostgreSQL
   static Future<Map<String, dynamic>> analyzeMentalHealth(String text, List<int> surveyAnswers) async {
     try {
       final response = await http.post(
@@ -12,7 +64,8 @@ class ApiService {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "text": text,
-          "survey_answers": surveyAnswers
+          "survey_answers": surveyAnswers,
+          "user_id": AppState.userId,
         }),
       );
 
@@ -26,7 +79,9 @@ class ApiService {
     }
   }
 
-  // Connects to the secure Chatbot Proxy
+  // --- CHAT ---
+
+  /// Connects to the secure Chatbot Proxy
   static Future<String> chatWithAi(String message, {String sessionId = "default"}) async {
     try {
       final response = await http.post(
@@ -49,9 +104,15 @@ class ApiService {
     }
   }
 
+  // --- HISTORY ---
+
   static Future<List<Map<String, dynamic>>> getHistory() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/analyses/history'));
+      String url = '$baseUrl/analyses/history';
+      if (AppState.userId != null) {
+        url += '?user_id=${AppState.userId}';
+      }
+      final response = await http.get(Uri.parse(url));
       
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../data/app_state.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -65,58 +66,29 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               // User Info
-              const Text(
-                'Ahmed',
-                style: TextStyle(
+              Text(
+                AppState.userName ?? 'User',
+                style: const TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'ahmed@gmail.com', // Placeholder email
-                style: TextStyle(
+              Text(
+                AppState.userEmail ?? 'user@example.com',
+                style: const TextStyle(
                   color: AppTheme.textGrey,
                   fontSize: 14,
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Mood Representation
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppTheme.bgCard,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  children: [
-                    const Text(
-                      'How are you feeling today?',
-                      style: TextStyle(
-                        color: AppTheme.textWhite,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _moodIcon(Icons.sentiment_very_satisfied, 'Happy', AppTheme.green),
-                        _moodIcon(Icons.sentiment_very_dissatisfied, 'Sad', AppTheme.red),
-                        _moodIcon(Icons.sentiment_neutral, 'Anxious', AppTheme.orange),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
+
 
               // Other Profile Options (Examples)
               _profileOption(Icons.settings_outlined, 'Settings'),
-              _profileOption(Icons.history, 'Assessment History'),
+
               _profileOption(Icons.help_outline, 'Help Center'),
               const SizedBox(height: 40),
 

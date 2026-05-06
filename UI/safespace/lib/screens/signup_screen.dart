@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl_phone_field/intl_phone_field.dart';
-import 'package:intl_phone_field/country_picker_dialog.dart';
+
 import '../main.dart';
+import '../data/app_state.dart';
+import '../services/api_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,16 +15,18 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final _nameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
+
   final _passwordCtrl = TextEditingController();
   bool _obscure = true;
 
   String? _nameError;
   String? _emailError;
-  String? _phoneError;
+
   String? _passwordError;
 
-  void _createAccount() {
+  bool _isLoading = false;
+
+  void _createAccount() async {
     setState(() {
       _nameError =
           _nameCtrl.text.trim().isEmpty ? 'you must enter the Name' : null;
@@ -31,15 +34,13 @@ class _SignupScreenState extends State<SignupScreen> {
       final emailText = _emailCtrl.text.trim();
       if (emailText.isEmpty) {
         _emailError = 'you must enter the Email';
-      } else if (!emailText.endsWith('@gmail.com')) {
-        _emailError = 'Email must end with @gmail.com';
+      } else if (!emailText.contains('@')) {
+        _emailError = 'Please enter a valid email address';
       } else {
         _emailError = null;
       }
 
-      _phoneError = _phoneCtrl.text.trim().isEmpty
-          ? 'you must enter the Phone Number'
-          : null;
+
       _passwordError = _passwordCtrl.text.trim().isEmpty
           ? 'you must enter the Password'
           : null;
@@ -47,9 +48,30 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (_nameError == null &&
         _emailError == null &&
-        _phoneError == null &&
+
         _passwordError == null) {
-      Navigator.pushReplacementNamed(context, '/home');
+      setState(() => _isLoading = true);
+      try {
+        final result = await ApiService.signup(
+          _nameCtrl.text.trim(),
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
+        );
+        AppState.userId = result['user_id'];
+        AppState.userEmail = _emailCtrl.text.trim();
+        AppState.userName = _nameCtrl.text.trim();
+        AppState.userPassword = _passwordCtrl.text.trim();
+        await AppState.saveUserInfo();
+        if (mounted) Navigator.pushReplacementNamed(context, '/home');
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$e'), backgroundColor: AppTheme.red),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -57,7 +79,7 @@ class _SignupScreenState extends State<SignupScreen> {
   void dispose() {
     _nameCtrl.dispose();
     _emailCtrl.dispose();
-    _phoneCtrl.dispose();
+
     _passwordCtrl.dispose();
     super.dispose();
   }
@@ -133,56 +155,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   keyboardType: TextInputType.emailAddress,
                   errorText: _emailError,
                 ),
-                const SizedBox(height: 14),
-                IntlPhoneField(
-                  controller: _phoneCtrl,
-                  style:
-                      const TextStyle(color: AppTheme.textWhite, fontSize: 13),
-                  dropdownTextStyle:
-                      const TextStyle(color: AppTheme.textWhite, fontSize: 10),
-                  showDropdownIcon: true,
-                  dropdownIcon: const Icon(Icons.arrow_drop_down,
-                      color: AppTheme.textDimmed, size: 12),
-                  flagsButtonPadding: const EdgeInsets.only(left: 4, right: 0),
-                  showCountryFlag: true,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: InputDecoration(
-                    hintText: 'Phone Number',
-                    hintStyle: const TextStyle(
-                        color: AppTheme.textDimmed, fontSize: 13),
-                    counterText: '',
-                    errorText: _phoneError,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                    errorStyle: const TextStyle(color: AppTheme.red),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: AppTheme.red, width: 1.5),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide:
-                          const BorderSide(color: AppTheme.red, width: 1.5),
-                    ),
-                  ),
-                  initialCountryCode: 'EG',
-                  pickerDialogStyle: PickerDialogStyle(
-                    countryCodeStyle: const TextStyle(fontSize: 11),
-                    countryNameStyle: const TextStyle(fontSize: 11),
-                    searchFieldInputDecoration: const InputDecoration(
-                      hintText: 'Search country',
-                      hintStyle:
-                          TextStyle(color: AppTheme.textDimmed, fontSize: 11),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    ),
-                    listTilePadding:
-                        const EdgeInsets.symmetric(vertical: 0, horizontal: 2),
-                    padding: const EdgeInsets.all(24),
-                  ),
-                ),
+
                 const SizedBox(height: 14),
                 _buildField(
                   controller: _passwordCtrl,
@@ -206,8 +179,10 @@ class _SignupScreenState extends State<SignupScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _createAccount,
-                    child: const Text('Create Account'),
+                    onPressed: _isLoading ? null : _createAccount,
+                    child: _isLoading
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Create Account'),
                   ),
                 ),
                 const SizedBox(height: 24),

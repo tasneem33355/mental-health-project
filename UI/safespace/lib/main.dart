@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'data/app_state.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/signup_screen.dart';
@@ -16,8 +17,9 @@ import 'screens/explore_screen.dart';
 import 'screens/wellness_screen.dart';
 import 'screens/bubble_pop_screen.dart';
 import 'screens/color_match_screen.dart';
+import 'screens/nlp_prediction_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -25,6 +27,7 @@ void main() {
       statusBarIconBrightness: Brightness.light,
     ),
   );
+  await AppState.init();
   runApp(const SafespaceApp());
 }
 
@@ -54,6 +57,7 @@ class SafespaceApp extends StatelessWidget {
         '/journal': (ctx) => const JournalScreen(),
         '/bubble-pop': (ctx) => const BubblePopScreen(),
         '/color-match': (ctx) => const ColorMatchScreen(),
+        '/nlp-prediction': (ctx) => const NlpPredictionScreen(),
       },
     );
   }

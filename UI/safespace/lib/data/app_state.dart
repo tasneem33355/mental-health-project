@@ -1,20 +1,119 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppState {
   static Map<String, int>? lastDassResults;
   static String? userPassword;
+  static String? userEmail;
+  static int? userId;
+  static String? userName;
   static DateTime? lastCheckInDate;
-  static List<MoodRecord> moodHistory = [
-    // Pre-fill some data for demonstration
-    MoodRecord(date: DateTime.now().subtract(const Duration(days: 6)), stress: 1, energy: 0.8, sleep: 4),
-    MoodRecord(date: DateTime.now().subtract(const Duration(days: 5)), stress: 2, energy: 0.6, sleep: 3),
-    MoodRecord(date: DateTime.now().subtract(const Duration(days: 4)), stress: 3, energy: 0.4, sleep: 2),
-    MoodRecord(date: DateTime.now().subtract(const Duration(days: 3)), stress: 2, energy: 0.7, sleep: 3),
-    MoodRecord(date: DateTime.now().subtract(const Duration(days: 2)), stress: 4, energy: 0.3, sleep: 1),
-    MoodRecord(date: DateTime.now().subtract(const Duration(days: 1)), stress: 1, energy: 0.9, sleep: 4),
-  ];
-
+  static List<MoodRecord> moodHistory = [];
   static List<Goal> goals = [];
+
+  // --- Persistence Keys ---
+  static String get _keyMoodHistory => 'mood_history_$userId';
+  static String get _keyGoals => 'goals_$userId';
+  static String get _keyLastCheckIn => 'last_check_in_$userId';
+  static const String _keyUserId = 'user_id';
+  static const String _keyUserEmail = 'user_email';
+  static const String _keyUserName = 'user_name';
+  static const String _keyUserPassword = 'user_password';
+
+  /// Initialize app state from SharedPreferences
+  static Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Restore user info
+    userId = prefs.getInt(_keyUserId);
+    userEmail = prefs.getString(_keyUserEmail);
+    userName = prefs.getString(_keyUserName);
+    userPassword = prefs.getString(_keyUserPassword);
+
+    await loadUserData(isFirstLaunch: true);
+  }
+
+  static Future<void> loadUserData({bool isFirstLaunch = false}) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Restore last check-in date
+    final checkInStr = prefs.getString(_keyLastCheckIn);
+    if (checkInStr != null) {
+      lastCheckInDate = DateTime.tryParse(checkInStr);
+    } else {
+      lastCheckInDate = null;
+    }
+
+    // Restore mood history
+    final moodJson = prefs.getStringList(_keyMoodHistory);
+    if (moodJson != null && moodJson.isNotEmpty) {
+      moodHistory = moodJson.map((s) => MoodRecord.fromJson(jsonDecode(s))).toList();
+    } else {
+      // Pre-fill demo data only on first launch if empty
+      if (isFirstLaunch && userId == null) {
+        moodHistory = [
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 6)), stress: 1, energy: 0.8, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 5)), stress: 2, energy: 0.6, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 4)), stress: 3, energy: 0.4, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 3)), stress: 2, energy: 0.7, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 2)), stress: 4, energy: 0.3, sleep: 1),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 1)), stress: 1, energy: 0.9, sleep: 4),
+        ];
+      } else {
+        moodHistory = [];
+      }
+    }
+
+    // Restore goals
+    final goalsJson = prefs.getStringList(_keyGoals);
+    if (goalsJson != null) {
+      goals = goalsJson.map((s) => Goal.fromJson(jsonDecode(s))).toList();
+    } else {
+      goals = [];
+    }
+  }
+
+  // --- Save helpers ---
+  static Future<void> _saveMoodHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = moodHistory.map((m) => jsonEncode(m.toJson())).toList();
+    await prefs.setStringList(_keyMoodHistory, jsonList);
+  }
+
+  static Future<void> _saveGoals() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonList = goals.map((g) => jsonEncode(g.toJson())).toList();
+    await prefs.setStringList(_keyGoals, jsonList);
+  }
+
+  static Future<void> saveUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (userId != null) await prefs.setInt(_keyUserId, userId!);
+    if (userEmail != null) await prefs.setString(_keyUserEmail, userEmail!);
+    if (userName != null) await prefs.setString(_keyUserName, userName!);
+    if (userPassword != null) await prefs.setString(_keyUserPassword, userPassword!);
+    await loadUserData(); // Reload user-specific data after changing identity
+  }
+
+  static Future<void> clearUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    userId = null;
+    userEmail = null;
+    userName = null;
+    userPassword = null;
+    await prefs.remove(_keyUserId);
+    await prefs.remove(_keyUserEmail);
+    await prefs.remove(_keyUserName);
+    await prefs.remove(_keyUserPassword);
+    
+    // Clear in-memory user data
+    lastCheckInDate = null;
+    moodHistory = [];
+    goals = [];
+  }
+
+  static bool get isLoggedIn => userId != null && userEmail != null;
 
   static bool get canCheckIn {
     if (lastCheckInDate == null) return true;
@@ -24,7 +123,7 @@ class AppState {
            lastCheckInDate!.year != now.year;
   }
 
-  static void addMoodRecord(int stress, double energy, int sleep) {
+  static Future<void> addMoodRecord(int stress, double energy, int sleep) async {
     moodHistory.add(MoodRecord(
       date: DateTime.now(),
       stress: stress,
@@ -32,14 +131,23 @@ class AppState {
       sleep: sleep,
     ));
     lastCheckInDate = DateTime.now();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_keyLastCheckIn, lastCheckInDate!.toIso8601String());
+    await _saveMoodHistory();
   }
 
-  static void addGoal(String title, DateTime? deadline) {
+  static Future<void> addGoal(String title, DateTime? deadline) async {
     goals.add(Goal(title: title, deadline: deadline));
+    await _saveGoals();
   }
 
-  static void removeGoal(Goal goal) {
+  static Future<void> removeGoal(Goal goal) async {
     goals.remove(goal);
+    await _saveGoals();
+  }
+
+  static Future<void> updateGoals() async {
+    await _saveGoals();
   }
 
   static String getMoodStatus() {
@@ -67,6 +175,20 @@ class MoodRecord {
     required this.energy,
     required this.sleep,
   });
+
+  Map<String, dynamic> toJson() => {
+    'date': date.toIso8601String(),
+    'stress': stress,
+    'energy': energy,
+    'sleep': sleep,
+  };
+
+  factory MoodRecord.fromJson(Map<String, dynamic> json) => MoodRecord(
+    date: DateTime.parse(json['date']),
+    stress: json['stress'],
+    energy: (json['energy'] as num).toDouble(),
+    sleep: json['sleep'],
+  );
 }
 
 class Goal {
@@ -75,4 +197,16 @@ class Goal {
   bool isDone;
 
   Goal({required this.title, this.deadline, this.isDone = false});
+
+  Map<String, dynamic> toJson() => {
+    'title': title,
+    'deadline': deadline?.toIso8601String(),
+    'isDone': isDone,
+  };
+
+  factory Goal.fromJson(Map<String, dynamic> json) => Goal(
+    title: json['title'],
+    deadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
+    isDone: json['isDone'] ?? false,
+  );
 }

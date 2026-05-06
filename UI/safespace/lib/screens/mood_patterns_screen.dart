@@ -3,9 +3,23 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../main.dart';
 import '../data/app_state.dart';
+import '../services/api_service.dart';
 
-class MoodPatternsScreen extends StatelessWidget {
+class MoodPatternsScreen extends StatefulWidget {
   const MoodPatternsScreen({super.key});
+
+  @override
+  State<MoodPatternsScreen> createState() => _MoodPatternsScreenState();
+}
+
+class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
+  late Future<List<Map<String, dynamic>>> _historyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _historyFuture = ApiService.getHistory();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +59,15 @@ class MoodPatternsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // Legend
+            // Daily Check-in Graph
+            const Text(
+              'Daily Check-ins',
+              style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
             _buildLegend(),
             const SizedBox(height: 16),
-
+            
             // Main Graph Container
             Container(
               height: 300,
@@ -107,10 +126,10 @@ class MoodPatternsScreen extends StatelessWidget {
                   ),
                   borderData: FlBorderData(show: false),
                   minX: 0,
-                  maxX: (history.length - 1).toDouble(),
+                  maxX: history.isEmpty ? 1 : (history.length - 1).toDouble(),
                   minY: 0,
                   maxY: 4.5,
-                  lineBarsData: [
+                  lineBarsData: history.isEmpty ? [] : [
                     // Stress Level (0-4)
                     _lineData(
                       history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.stress.toDouble())).toList(),
@@ -133,8 +152,209 @@ class MoodPatternsScreen extends StatelessWidget {
 
             const SizedBox(height: 32),
             _buildInsights(history),
+            const SizedBox(height: 32),
+
+            // Assessment History Graph
+            const Text(
+              'DASS 42 Assessment History',
+              style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            _buildDassHistoryGraph(),
+            const SizedBox(height: 40),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildDassHistoryGraph() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _historyFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 250,
+            decoration: BoxDecoration(
+              color: AppTheme.bgCard,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Container(
+            height: 250,
+            decoration: BoxDecoration(
+              color: AppTheme.bgCard,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Center(
+              child: Text(
+                'Could not load history:\n${snapshot.error}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppTheme.red),
+              ),
+            ),
+          );
+        }
+
+        final data = snapshot.data;
+        if (data == null || data.isEmpty) {
+          return Container(
+            height: 260,
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppTheme.bgCard,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.analytics_outlined, color: AppTheme.textDimmed, size: 48),
+                const SizedBox(height: 16),
+                const Text(
+                  'No assessments yet',
+                  style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Complete a DASS-42 assessment to see your progress here.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/dass'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryPurple.withOpacity(0.2),
+                    foregroundColor: AppTheme.accentPurple,
+                    elevation: 0,
+                  ),
+                  child: const Text('Take Assessment'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
+          decoration: BoxDecoration(
+            color: AppTheme.bgCard,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _legendItem('Depression', AppTheme.accentPurple),
+                  _legendItem('Anxiety', AppTheme.orange),
+                  _legendItem('Stress', AppTheme.green),
+                ],
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                height: 220,
+                child: LineChart(
+                  LineChartData(
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: 14,
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: AppTheme.textDimmed.withOpacity(0.1),
+                        strokeWidth: 1,
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 30,
+                          interval: 1,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index >= 0 && index < data.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  data[index]['date'].toString(),
+                                  style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                                ),
+                              );
+                            }
+                            return const Text('');
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          interval: 14,
+                          reservedSize: 30,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              value.toInt().toString(),
+                              style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    borderData: FlBorderData(show: false),
+                    minX: 0,
+                    maxX: (data.length - 1).toDouble(),
+                    minY: 0,
+                    maxY: 56, // Max DASS score with 5 options
+                    lineBarsData: [
+                      // Depression Line
+                      _createDassLineData(data, 'depression', AppTheme.accentPurple),
+                      // Anxiety Line
+                      _createDassLineData(data, 'anxiety', AppTheme.orange),
+                      // Stress Line
+                      _createDassLineData(data, 'stress', AppTheme.green),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  LineChartBarData _createDassLineData(List<dynamic> data, String key, Color color) {
+    return LineChartBarData(
+      spots: data.asMap().entries.map((e) {
+        return FlSpot(e.key.toDouble(), (e.value[key] ?? 0).toDouble());
+      }).toList(),
+      isCurved: true,
+      color: color,
+      barWidth: 3,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+          radius: 4,
+          color: color,
+          strokeWidth: 2,
+          strokeColor: AppTheme.bgCard,
+        ),
+      ),
+      belowBarData: BarAreaData(
+        show: true,
+        color: color.withOpacity(0.1),
       ),
     );
   }
