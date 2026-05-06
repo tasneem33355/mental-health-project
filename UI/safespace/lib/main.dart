@@ -15,6 +15,7 @@ import 'screens/journal_screen.dart';
 import 'screens/explore_screen.dart';
 import 'screens/wellness_screen.dart';
 import 'screens/bubble_pop_screen.dart';
+import 'screens/color_match_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -52,6 +53,7 @@ class SafespaceApp extends StatelessWidget {
         '/nightly-unwind': (ctx) => const RecommendationScreen(timeOfDay: 'Evening'),
         '/journal': (ctx) => const JournalScreen(),
         '/bubble-pop': (ctx) => const BubblePopScreen(),
+        '/color-match': (ctx) => const ColorMatchScreen(),
       },
     );
   }

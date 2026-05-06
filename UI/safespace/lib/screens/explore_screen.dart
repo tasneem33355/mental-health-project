@@ -1,8 +1,29 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import 'article_screen.dart';
 
-class ExploreScreen extends StatelessWidget {
+class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
+
+  @override
+  State<ExploreScreen> createState() => _ExploreScreenState();
+}
+
+class _ExploreScreenState extends State<ExploreScreen> {
+  final Map<String, String> _challengeStatuses = {
+    'Hydration Goal': 'Start',
+    'Gratitude Journal': 'Start',
+  };
+
+  void _handleChallengeClick(String title) {
+    setState(() {
+      if (_challengeStatuses[title] == 'Start') {
+        _challengeStatuses[title] = 'Done';
+      } else if (_challengeStatuses[title] == 'Done') {
+        _challengeStatuses[title] = 'Finished';
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +51,12 @@ class ExploreScreen extends StatelessWidget {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 children: [
-                  _buildEduCard('🧠', 'What is Anxiety?', 'Understanding the fight or flight response', const Color(0xFFFF8C42)),
-                  _buildEduCard('🌧️', 'Depression 101', 'Why do we feel sad without reason?', const Color(0xFF4A90D9)),
-                  _buildEduCard('⚡', 'Stress vs Burnout', 'How to tell the difference', const Color(0xFF9B6FFF)),
+                  _buildEduCard(context, '🧠', 'What is Anxiety?', 'Understanding the fight or flight response', const Color(0xFFFF8C42), 
+                    'Anxiety is your body\'s natural response to stress. It\'s a feeling of fear or apprehension about what\'s to come. The "fight or flight" response is a physiological reaction that occurs in response to a perceived harmful event, attack, or threat to survival.\n\nWhen this response is triggered, your body releases hormones like adrenaline and cortisol, which increase your heart rate and prepare you to either confront the danger or run away. In modern life, this can be triggered by non-life-threatening situations like public speaking or a difficult meeting.'),
+                  _buildEduCard(context, '🌧️', 'Depression 101', 'Why do we feel sad without reason?', const Color(0xFF4A90D9),
+                    'Depression is more than just feeling sad for a few days. It is a persistent feeling of sadness and loss of interest that can interfere with your daily life. It can affect how you feel, think, and handle daily activities, such as sleeping, eating, or working.\n\nWhile the exact cause isn\'t known, it\'s often a combination of genetic, biological, environmental, and psychological factors. Understanding that it\'s a clinical condition can help in seeking the right support and realizing that you aren\'t alone in this journey.'),
+                  _buildEduCard(context, '⚡', 'Stress vs Burnout', 'How to tell the difference', const Color(0xFF9B6FFF),
+                    'Stress and burnout are often used interchangeably, but they are different. Stress is characterized by "over-engagement"—having too much on your plate and feeling like you can\'t handle it. Burnout, on the other hand, is characterized by "disengagement"—feeling empty, devoid of motivation, and beyond caring.\n\nIf stress is like drowning in responsibilities, burnout is like being all dried up. Recognizing the signs early can help you implement self-care strategies and prevent long-term exhaustion.'),
                 ],
               ),
             ),
@@ -48,57 +72,72 @@ class ExploreScreen extends StatelessWidget {
             _buildChallengeCard('📝', 'Gratitude Journal', 'Write 2 things you are grateful for today.', AppTheme.accentPurple),
             const SizedBox(height: 32),
 
-            // Mini Games
-            const Text(
-              'Mini Games',
-              style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(child: _buildMiniGameCard(context, '🎈', 'Bubble Pop', 'Fidget & Relax', '/bubble-pop')),
-                const SizedBox(width: 16),
-                Expanded(child: _buildMiniGameCard(context, '🎨', 'Color Match', 'Distract your mind', null)),
-              ],
-            ),
-            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildEduCard(String emoji, String title, String subtitle, Color color) {
-    return Container(
-      width: 240,
-      margin: const EdgeInsets.only(right: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 32)),
-          const Spacer(),
-          Text(title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 4),
-          Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
-        ],
+  Widget _buildEduCard(BuildContext context, String emoji, String title, String subtitle, Color color, String content) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ArticleScreen(
+              title: title,
+              content: content,
+              emoji: emoji,
+              color: color,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Hero(
+              tag: 'edu-emoji-$title',
+              child: Material(
+                color: Colors.transparent,
+                child: Text(emoji, style: const TextStyle(fontSize: 32)),
+              ),
+            ),
+            const Spacer(),
+            Text(title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildChallengeCard(String emoji, String title, String subtitle, Color iconColor) {
+    String status = _challengeStatuses[title] ?? 'Start';
+    String displayTitle = title;
+    if (status == 'Done') {
+      displayTitle = '$title (In Progress)';
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
+        border: Border.all(
+          color: status == 'Finished' ? AppTheme.green.withOpacity(0.3) : AppTheme.textDimmed.withOpacity(0.1),
+        ),
       ),
       child: Row(
         children: [
@@ -112,49 +151,36 @@ class ExploreScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text(
+                  displayTitle,
+                  style: TextStyle(
+                    color: status == 'Finished' ? AppTheme.green : AppTheme.textWhite,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 4),
                 Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
               ],
             ),
           ),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: status == 'Finished' ? null : () => _handleChallengeClick(title),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.bgCardLight,
+              backgroundColor: status == 'Done' ? AppTheme.accentPurple : AppTheme.bgCardLight,
+              disabledBackgroundColor: AppTheme.bgCard.withOpacity(0.5),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               minimumSize: Size.zero,
             ),
-            child: const Text('Start', style: TextStyle(color: AppTheme.accentPurple, fontSize: 12)),
+            child: Text(
+              status,
+              style: TextStyle(
+                color: status == 'Done' ? Colors.white : (status == 'Finished' ? AppTheme.textDimmed : AppTheme.accentPurple),
+                fontSize: 12,
+              ),
+            ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMiniGameCard(BuildContext context, String emoji, String title, String subtitle, String? route) {
-    return GestureDetector(
-      onTap: () {
-        if (route != null) {
-          Navigator.pushNamed(context, route);
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppTheme.bgCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
-        ),
-        child: Column(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 32)),
-            const SizedBox(height: 12),
-            Text(title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 12)),
-          ],
-        ),
       ),
     );
   }

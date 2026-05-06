@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import 'package:intl/intl.dart';
 import '../data/app_state.dart';
 import 'profile_screen.dart';
 import 'explore_screen.dart';
@@ -42,15 +43,6 @@ class _HomeScreenState extends State<HomeScreen> {
         route: '/nightly-unwind'),
   ];
 
-  final List<_MoodEntry> _moods = [
-    _MoodEntry(emoji: '😰', label: 'Stressed', time: 'Slade, 22:45 PM',
-        color: Color(0xFFFF5757), checked: true),
-    _MoodEntry(emoji: '😊', label: 'Hopeful', time: 'Slade, 22:00 AM',
-        color: Color(0xFF4CAF82), checked: true),
-    _MoodEntry(emoji: '😟', label: 'Anxious', time: 'Slade, 22:00 AM',
-        color: Color(0xFFFFD166), checked: false),
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 24),
                     _buildPlanSection(),
                     const SizedBox(height: 24),
-                    _buildMoodTimeline(),
+                    _buildGoalTrackerSection(),
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -171,11 +163,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    final canCheckIn = AppState.canCheckIn;
     final buttons = [
       _ActionBtn(icon: Icons.assignment_outlined, label: 'Assessment',
           onTap: () => Navigator.pushNamed(context, '/dass')),
-      _ActionBtn(icon: Icons.check_circle_outline, label: 'Check-In',
-          onTap: () => Navigator.pushNamed(context, '/mood-questionnaire')),
+      _ActionBtn(
+          icon: canCheckIn ? Icons.check_circle_outline : Icons.check_circle,
+          label: canCheckIn ? 'Check-In' : 'Done Today',
+          onTap: () {
+            if (canCheckIn) {
+              Navigator.pushNamed(context, '/mood-questionnaire').then((_) => setState(() {}));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('You have already completed your check-in for today!')),
+              );
+            }
+          }),
       _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log Mood',
           onTap: () => Navigator.pushNamed(context, '/mood-patterns')),
     ];
@@ -339,22 +342,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildMoodTimeline() {
+  Widget _buildGoalTrackerSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Mood Timeline',
-            style: TextStyle(
-                color: AppTheme.textWhite,
-                fontSize: 18,
-                fontWeight: FontWeight.w600)),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('Goal Tracker',
+                style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600)),
+            GestureDetector(
+              onTap: () => _showAddGoalDialog(context),
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryPurple.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.add, color: AppTheme.accentPurple, size: 18),
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 14),
-        ..._moods.map((m) => _buildMoodEntry(m)),
+        if (AppState.goals.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: Text('No goals set yet. Add one!',
+                  style: TextStyle(color: AppTheme.textDimmed, fontSize: 13)),
+            ),
+          )
+        else
+          ...AppState.goals.map((g) => _buildGoalItem(g)),
       ],
     );
   }
 
-  Widget _buildMoodEntry(_MoodEntry mood) {
+  Widget _buildGoalItem(Goal goal) {
+    final bool isExpired = goal.deadline != null && goal.deadline!.isBefore(DateTime.now());
+    final Color textColor = isExpired ? AppTheme.red : AppTheme.textWhite;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -364,52 +395,138 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: mood.color.withOpacity(0.15),
-              shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () => setState(() => goal.isDone = !goal.isDone),
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: goal.isDone ? AppTheme.primaryPurple : Colors.transparent,
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: goal.isDone ? AppTheme.primaryPurple : AppTheme.textDimmed,
+                ),
+              ),
+              child: goal.isDone
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : null,
             ),
-            child: Center(
-                child: Text(mood.emoji,
-                    style: const TextStyle(fontSize: 20))),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(mood.label,
-                    style: const TextStyle(
-                        color: AppTheme.textWhite,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15)),
-                Text(mood.time,
-                    style: const TextStyle(
-                        color: AppTheme.textGrey, fontSize: 12)),
+                Text(
+                  goal.title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
+                    decoration: goal.isDone ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                if (goal.deadline != null)
+                  Text(
+                    'Deadline: ${DateFormat('MMM dd, hh:mm a').format(goal.deadline!)}',
+                    style: TextStyle(
+                        color: isExpired ? AppTheme.red.withOpacity(0.8) : AppTheme.textGrey,
+                        fontSize: 11),
+                  ),
               ],
             ),
           ),
-          Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: mood.checked
-                  ? AppTheme.primaryPurple
-                  : Colors.transparent,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: mood.checked
-                    ? AppTheme.primaryPurple
-                    : AppTheme.textDimmed,
-              ),
-            ),
-            child: mood.checked
-                ? const Icon(Icons.check, color: Colors.white, size: 14)
-                : null,
+          IconButton(
+            onPressed: () {
+              setState(() {
+                AppState.removeGoal(goal);
+              });
+            },
+            icon: const Icon(Icons.delete_outline, color: AppTheme.textDimmed, size: 20),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showAddGoalDialog(BuildContext context) {
+    final titleController = TextEditingController();
+    DateTime? selectedDate;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: AppTheme.bgCard,
+          title: const Text('Add New Goal', style: TextStyle(color: AppTheme.textWhite)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                style: const TextStyle(color: AppTheme.textWhite),
+                decoration: const InputDecoration(
+                  hintText: 'Goal Title',
+                  hintStyle: TextStyle(color: AppTheme.textDimmed),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                title: Text(
+                  selectedDate == null
+                      ? 'No Deadline'
+                      : 'Deadline: ${DateFormat('MMM dd, HH:mm').format(selectedDate!)}',
+                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
+                ),
+                trailing: const Icon(Icons.calendar_today, color: AppTheme.accentPurple),
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
+                  );
+                  if (date != null) {
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.now(),
+                    );
+                    if (time != null) {
+                      setDialogState(() {
+                        selectedDate = DateTime(
+                          date.year,
+                          date.month,
+                          date.day,
+                          time.hour,
+                          time.minute,
+                        );
+                      });
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (titleController.text.isNotEmpty) {
+                  setState(() {
+                    AppState.addGoal(titleController.text, selectedDate);
+                  });
+                  Navigator.pop(ctx);
+                }
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        ),
       ),
     );
   }
