@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../data/app_state.dart';
 
 class MoodQuestionnaireScreen extends StatefulWidget {
   const MoodQuestionnaireScreen({super.key});
@@ -93,7 +94,23 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    if (_stressLevel == null || _sleepQuality == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Please answer all questions')),
+                      );
+                      return;
+                    }
+                    AppState.addMoodRecord(
+                      _stressLevel!,
+                      _energyLevel,
+                      _sleepQuality!,
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Daily check-in completed!')),
+                    );
+                    Navigator.pop(context);
+                  },
                   child: const Text('Submit'),
                 ),
               ),

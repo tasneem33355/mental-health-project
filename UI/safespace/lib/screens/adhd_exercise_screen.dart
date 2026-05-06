@@ -16,56 +16,56 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
   Timer? _timer;
 
   final List<_Task> _tasks = [
-    _Task(
+    const _Task(
         emoji: '💡',
         title: 'Practice 1 new skill',
         subtitle: 'Build - Every month',
         color: Color(0xFF9B6FFF),
         completed: true,
         hasTimer: false),
-    _Task(
+    const _Task(
         emoji: '📚',
         title: 'Read a Book',
         subtitle: '02:30',
         color: Color(0xFF4A90D9),
         completed: false,
         hasTimer: true),
-    _Task(
+    const _Task(
         emoji: '💳',
         title: 'Pay your bills',
         subtitle: 'Every month',
         color: Color(0xFF4CAF82),
         completed: false,
         hasTimer: false),
-    _Task(
+    const _Task(
         emoji: '💳',
         title: 'Pay your bills',
         subtitle: 'Every month',
         color: Color(0xFFFF5757),
         completed: false,
         hasTimer: false),
-    _Task(
+    const _Task(
         emoji: '🏠',
         title: 'Clean up your Home',
         subtitle: 'Every Week',
         color: Color(0xFFFFD166),
         completed: false,
         hasTimer: false),
-    _Task(
+    const _Task(
         emoji: '💬',
         title: 'Message Someone you love',
         subtitle: 'Every Day',
         color: Color(0xFFFF8C42),
         completed: false,
         hasTimer: false),
-    _Task(
+    const _Task(
         emoji: '🏃',
         title: 'Exercise',
         subtitle: 'Every Day',
         color: Color(0xFF4CAF82),
         completed: false,
         hasTimer: false),
-    _Task(
+    const _Task(
         emoji: '🏃',
         title: 'Exercise',
         subtitle: 'Every Day',
@@ -131,11 +131,11 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
               'Lorem ipsum dolor sit amet consectetur. Dictum auctor pharetra.',
-              style: const TextStyle(
+              style: TextStyle(
                   color: AppTheme.textGrey, fontSize: 13, height: 1.4),
             ),
           ),

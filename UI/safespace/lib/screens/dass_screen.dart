@@ -22,6 +22,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
     'Applied to me to some degree',
     'Applied to me to a considerable degree',
     'Applied to me very much',
+    'Applied to me almost all the time',
   ];
 
   void _onOptionSelected(int value) {
@@ -61,7 +62,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
     int stressScore = 0;
 
     _answers.forEach((index, value) {
-      int score = value - 1; // Convert 1-4 to 0-3
+      int score = value; // Use the value directly (0-4) as requested
       if (depressionIdx.contains(index)) depressionScore += score;
       if (anxietyIdx.contains(index)) anxietyScore += score;
       if (stressIdx.contains(index)) stressScore += score;
@@ -81,7 +82,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
     );
 
     // Prepare answers list (length 42)
-    List<int> surveyAnswers = List.generate(42, (i) => _answers[i] ?? 1);
+    List<int> surveyAnswers = List.generate(42, (i) => _answers[i] ?? 0);
 
     ApiService.analyzeMentalHealth("I am finishing my DASS assessment.", surveyAnswers).then((result) {
       Navigator.pop(context); // Remove loading
@@ -206,11 +207,11 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
                       ),
                       const SizedBox(height: 48),
                       ...List.generate(_options.length, (optIdx) {
-                        bool selected = _answers[index] == (optIdx + 1);
+                        bool selected = _answers[index] == optIdx;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 12),
                           child: GestureDetector(
-                            onTap: () => _onOptionSelected(optIdx + 1),
+                            onTap: () => _onOptionSelected(optIdx),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

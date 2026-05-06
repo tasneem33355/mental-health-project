@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '../main.dart';
+import '../data/app_state.dart';
 
 class MoodPatternsScreen extends StatelessWidget {
   const MoodPatternsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final history = AppState.moodHistory;
+
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
@@ -23,25 +28,11 @@ class MoodPatternsScreen extends StatelessWidget {
                 color: AppTheme.textWhite, size: 16),
           ),
         ),
-        title: const Text('Mood Patterns',
+        title: const Text('Mood Tracking',
             style: TextStyle(
                 color: AppTheme.textWhite,
                 fontSize: 17,
                 fontWeight: FontWeight.w600)),
-        actions: [
-          Container(
-            margin: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.bgCard,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Padding(
-              padding: EdgeInsets.all(8),
-              child: Icon(Icons.notifications_none,
-                  color: AppTheme.textWhite, size: 20),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -49,245 +40,210 @@ class MoodPatternsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Here's a look at your mood patterns for this week.",
+              "Here's your wellness journey over the past week.",
               style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
             ),
-            const SizedBox(height: 20),
-
-            // Stress insight chip
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppTheme.bgCard,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  Icon(Icons.access_time, color: AppTheme.textGrey, size: 16),
-                  SizedBox(width: 8),
-                  Text('Higher stress on Wed, Fri, Sat',
-                      style: TextStyle(
-                          color: AppTheme.textWhite, fontSize: 13)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Bar Chart
-            _MoodBarChart(),
             const SizedBox(height: 24),
 
-            // Mood Timeline
-            const Text('Mood Timeline',
-                style: TextStyle(
-                    color: AppTheme.textWhite,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600)),
-            const SizedBox(height: 14),
+            // Legend
+            _buildLegend(),
+            const SizedBox(height: 16),
 
-            _moodTimelineEntry('😰', 'Stressed', 'Slade, 22:45 PM',
-                const Color(0xFFFF5757), true),
-            _moodTimelineEntry('😊', 'Hopeful', 'Slade, 22:00 AM',
-                AppTheme.green, true),
-            _moodTimelineEntry('😟', 'Anxious', 'Slade, 22:00 AM',
-                AppTheme.yellow, false),
+            // Main Graph Container
+            Container(
+              height: 300,
+              padding: const EdgeInsets.fromLTRB(10, 24, 20, 10),
+              decoration: BoxDecoration(
+                color: AppTheme.bgCard,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: AppTheme.textDimmed.withOpacity(0.1),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          int index = value.toInt();
+                          if (index >= 0 && index < history.length) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                DateFormat('E').format(history[index].date),
+                                style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                              ),
+                            );
+                          }
+                          return const Text('');
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  minX: 0,
+                  maxX: (history.length - 1).toDouble(),
+                  minY: 0,
+                  maxY: 4.5,
+                  lineBarsData: [
+                    // Stress Level (0-4)
+                    _lineData(
+                      history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.stress.toDouble())).toList(),
+                      AppTheme.red,
+                    ),
+                    // Energy Level (0.0-1.0 mapped to 0-4)
+                    _lineData(
+                      history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.energy * 4)).toList(),
+                      AppTheme.orange,
+                    ),
+                    // Sleep Quality (0-4)
+                    _lineData(
+                      history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.sleep.toDouble())).toList(),
+                      AppTheme.green,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+            _buildInsights(history),
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  Widget _moodTimelineEntry(
-      String emoji, String label, String time, Color color, bool checked) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-                child: Text(emoji, style: const TextStyle(fontSize: 20))),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label,
-                    style: const TextStyle(
-                        color: AppTheme.textWhite,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15)),
-                Text(time,
-                    style: const TextStyle(
-                        color: AppTheme.textGrey, fontSize: 12)),
-              ],
-            ),
-          ),
-          Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: checked ? AppTheme.primaryPurple : Colors.transparent,
-              shape: BoxShape.circle,
-              border: Border.all(
-                  color: checked ? AppTheme.primaryPurple : AppTheme.textDimmed),
-            ),
-            child: checked
-                ? const Icon(Icons.check, color: Colors.white, size: 14)
-                : null,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        border:
-            Border(top: BorderSide(color: AppTheme.textDimmed.withOpacity(0.2))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(Icons.home_outlined, 'Home', false),
-              _navItem(Icons.explore_outlined, 'Explore', false),
-              _navItem(Icons.favorite_outline, 'Wellness', false),
-              _navItem(Icons.person_outline, 'Profile', false),
-            ],
-          ),
+  LineChartBarData _lineData(List<FlSpot> spots, Color color) {
+    return LineChartBarData(
+      spots: spots,
+      isCurved: true,
+      color: color,
+      barWidth: 3,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
+          radius: 4,
+          color: color,
+          strokeWidth: 2,
+          strokeColor: AppTheme.bgCard,
         ),
       ),
+      belowBarData: BarAreaData(
+        show: true,
+        color: color.withOpacity(0.1),
+      ),
     );
   }
 
-  Widget _navItem(IconData icon, String label, bool selected) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Icon(icon,
-            color:
-                selected ? AppTheme.accentPurple : AppTheme.textDimmed,
-            size: 24),
-        const SizedBox(height: 4),
-        Text(label,
-            style: TextStyle(
-                color:
-                    selected ? AppTheme.accentPurple : AppTheme.textDimmed,
-                fontSize: 11)),
+        _legendItem('Stress', AppTheme.red),
+        _legendItem('Energy', AppTheme.orange),
+        _legendItem('Sleep', AppTheme.green),
       ],
     );
   }
-}
 
-class _MoodBarChart extends StatelessWidget {
-  const _MoodBarChart();
+  Widget _legendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
+        const SizedBox(width: 8),
+        Text(label, style: const TextStyle(color: AppTheme.textWhite, fontSize: 12)),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final days = ['Mon', 'Tue', 'Wed', 'Fri', 'Sat', 'Sun'];
-    final values = [0.4, 0.5, 0.85, 0.3, 0.75, 0.6];
-    final highlighted = [false, false, true, false, true, false];
+  Widget _buildInsights(List<MoodRecord> history) {
+    if (history.isEmpty) return const SizedBox();
+    
+    final last = history.last;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Daily Insights',
+            style: TextStyle(
+                color: AppTheme.textWhite,
+                fontSize: 18,
+                fontWeight: FontWeight.w600)),
+        const SizedBox(height: 14),
+        _insightCard(
+          'Mood Summary',
+          'Your energy has been ${last.energy > 0.7 ? 'high' : 'stable'} today. ${last.stress > 2 ? 'Try some breathing exercises to lower your stress.' : 'You seem to be in a calm state.'}',
+          Icons.auto_awesome,
+        ),
+      ],
+    );
+  }
 
+  Widget _insightCard(String title, String desc, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Y-axis labels
-          const Row(
-            children: [
-              SizedBox(
-                width: 24,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text('11M', style: TextStyle(color: AppTheme.textDimmed, fontSize: 10)),
-                    SizedBox(height: 28),
-                    Text('9M', style: TextStyle(color: AppTheme.textDimmed, fontSize: 10)),
-                    SizedBox(height: 28),
-                    Text('6M', style: TextStyle(color: AppTheme.textDimmed, fontSize: 10)),
-                  ],
-                ),
-              ),
-              SizedBox(width: 8),
-              Expanded(child: SizedBox(height: 80)),
-            ],
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryPurple.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: AppTheme.accentPurple, size: 24),
           ),
-          const SizedBox(height: 4),
-          Row(
-            children: [
-              const SizedBox(width: 32),
-              Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: List.generate(days.length, (i) {
-                    return _Bar(
-                      label: days[i],
-                      value: values[i],
-                      highlighted: highlighted[i],
-                    );
-                  }),
-                ),
-              ),
-            ],
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        color: AppTheme.textWhite,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15)),
+                const SizedBox(height: 4),
+                Text(desc,
+                    style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4)),
+              ],
+            ),
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Bar extends StatelessWidget {
-  final String label;
-  final double value;
-  final bool highlighted;
-
-  const _Bar(
-      {required this.label, required this.value, required this.highlighted});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 600),
-          width: 28,
-          height: 80 * value,
-          decoration: BoxDecoration(
-            color: highlighted ? AppTheme.primaryPurple : AppTheme.bgCardLight,
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(label,
-            style: TextStyle(
-                color: highlighted ? AppTheme.accentPurple : AppTheme.textDimmed,
-                fontSize: 11)),
-      ],
     );
   }
 }

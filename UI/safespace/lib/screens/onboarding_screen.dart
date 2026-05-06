@@ -13,20 +13,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   final List<_OnboardingItem> _pages = [
-    _OnboardingItem(
+    const _OnboardingItem(
       title: 'Safespace Helps You Understand How\nYou Feel And Guides Your Toward\nHealthy Recovery',
       emoji: '🧘',
-      color: const Color(0xFF7B3FE4),
+      color: Color(0xFF7B3FE4),
     ),
-    _OnboardingItem(
+    const _OnboardingItem(
       title: 'Track Your Mood Daily\nAnd Discover Your Emotional Patterns',
       emoji: '📊',
-      color: const Color(0xFF5B2EC4),
+      color: Color(0xFF5B2EC4),
     ),
-    _OnboardingItem(
+    const _OnboardingItem(
       title: 'Build Healthy Habits\nWith Guided Exercises And Mindfulness',
       emoji: '🌟',
-      color: const Color(0xFF9B4FF4),
+      color: Color(0xFF9B4FF4),
     ),
   ];
 

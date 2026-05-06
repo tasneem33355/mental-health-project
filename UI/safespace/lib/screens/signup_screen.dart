@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import '../main.dart';
-import '../data/app_state.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -26,8 +25,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
   void _createAccount() {
     setState(() {
-      _nameError = _nameCtrl.text.trim().isEmpty ? 'you must enter the Name' : null;
-      
+      _nameError =
+          _nameCtrl.text.trim().isEmpty ? 'you must enter the Name' : null;
+
       final emailText = _emailCtrl.text.trim();
       if (emailText.isEmpty) {
         _emailError = 'you must enter the Email';
@@ -37,15 +37,18 @@ class _SignupScreenState extends State<SignupScreen> {
         _emailError = null;
       }
 
-      _phoneError = _phoneCtrl.text.trim().isEmpty ? 'you must enter the Phone Number' : null;
-      _passwordError = _passwordCtrl.text.trim().isEmpty ? 'you must enter the Password' : null;
+      _phoneError = _phoneCtrl.text.trim().isEmpty
+          ? 'you must enter the Phone Number'
+          : null;
+      _passwordError = _passwordCtrl.text.trim().isEmpty
+          ? 'you must enter the Password'
+          : null;
     });
 
     if (_nameError == null &&
         _emailError == null &&
         _phoneError == null &&
         _passwordError == null) {
-      AppState.userPassword = _passwordCtrl.text;
       Navigator.pushReplacementNamed(context, '/home');
     }
   }
@@ -133,40 +136,50 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 14),
                 IntlPhoneField(
                   controller: _phoneCtrl,
-                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 13),
-                  dropdownTextStyle: const TextStyle(color: AppTheme.textWhite, fontSize: 10),
+                  style:
+                      const TextStyle(color: AppTheme.textWhite, fontSize: 13),
+                  dropdownTextStyle:
+                      const TextStyle(color: AppTheme.textWhite, fontSize: 10),
                   showDropdownIcon: true,
-                  dropdownIcon: const Icon(Icons.arrow_drop_down, color: AppTheme.textDimmed, size: 12),
+                  dropdownIcon: const Icon(Icons.arrow_drop_down,
+                      color: AppTheme.textDimmed, size: 12),
                   flagsButtonPadding: const EdgeInsets.only(left: 4, right: 0),
                   showCountryFlag: true,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   decoration: InputDecoration(
                     hintText: 'Phone Number',
-                    hintStyle: const TextStyle(color: AppTheme.textDimmed, fontSize: 13),
+                    hintStyle: const TextStyle(
+                        color: AppTheme.textDimmed, fontSize: 13),
                     counterText: '',
                     errorText: _phoneError,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 10),
                     errorStyle: const TextStyle(color: AppTheme.red),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                      borderSide:
+                          const BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                      borderSide:
+                          const BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                   ),
                   initialCountryCode: 'EG',
                   pickerDialogStyle: PickerDialogStyle(
                     countryCodeStyle: const TextStyle(fontSize: 11),
                     countryNameStyle: const TextStyle(fontSize: 11),
-                    searchFieldInputDecoration: InputDecoration(
+                    searchFieldInputDecoration: const InputDecoration(
                       hintText: 'Search country',
-                      hintStyle: const TextStyle(color: AppTheme.textDimmed, fontSize: 11),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      hintStyle:
+                          TextStyle(color: AppTheme.textDimmed, fontSize: 11),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     ),
-                    listTilePadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 2),
+                    listTilePadding:
+                        const EdgeInsets.symmetric(vertical: 0, horizontal: 2),
                     padding: const EdgeInsets.all(24),
                   ),
                 ),
@@ -199,17 +212,17 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                Row(
+                const Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                         child: Divider(color: AppTheme.textDimmed, height: 1)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Or',
                           style: TextStyle(
                               color: AppTheme.textDimmed, fontSize: 13)),
                     ),
-                    const Expanded(
+                    Expanded(
                         child: Divider(color: AppTheme.textDimmed, height: 1)),
                   ],
                 ),
@@ -232,8 +245,8 @@ class _SignupScreenState extends State<SignupScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text('Already have an account?',
-                        style: TextStyle(
-                            color: AppTheme.textGrey, fontSize: 14)),
+                        style:
+                            TextStyle(color: AppTheme.textGrey, fontSize: 14)),
                     const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () =>
@@ -305,9 +318,7 @@ class _SignupScreenState extends State<SignupScreen> {
             : Text(
                 label,
                 style: TextStyle(
-                    color: color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700),
+                    color: color, fontSize: 18, fontWeight: FontWeight.w700),
               ),
       ),
     );
