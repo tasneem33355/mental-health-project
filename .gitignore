@@ -9,3 +9,11 @@ data.csv
 *.h5
 *.pkl
 mental_xlmr_final/
+UI/safespace/build/
+UI/safespace/.dart_tool/
+UI/safespace/.pub-cache/
+UI/safespace/.flutter-plugins
+UI/safespace/.flutter-plugins-dependencies
+UI/safespace/node_modules/
+*.log
+.DS_Store
