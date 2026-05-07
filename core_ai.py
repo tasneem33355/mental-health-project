@@ -14,6 +14,95 @@ warnings.filterwarnings("ignore")
 CLASSES = ["anxiety", "depression", "stress"]
 
 
+# ── KEYWORD OVERRIDE ─────────────────────────────────────────────────────────
+DEPRESSION_KEYWORDS = [
+    # Arabic (Fusha + dialects)
+    "اكتئاب", "مكتئب", "مكتئبة", "حزن", "حزين", "حزينة", "يأس", "يائس", "يائسة",
+    "فراغ", "إحساس بالفراغ", "بلا معنى", "لا معنى", "مالهاش معنى", "بلا هدف",
+    "لا أمل", "مفيش أمل", "تعبت من الحياة", "زهقت من الحياة",
+    "مش لاقي معنى", "مش لاقية معنى", "حاسس بالفراغ", "حاسة بالفراغ",
+    "مفيش طاقة", "مفيش رغبة", "بكاء", "عايز أبكي", "عايزة أبكي",
+    "وحيد", "وحيدة", "عزلة", "منعزل", "منعزلة",
+    "إرهاق نفسي", "إرهاق عاطفي", "مش حاسس بحاجة", "مش حاسة بحاجة",
+    "زهقت", "تعبت", "مش طايق", "مش طايقة", "نفسيتي وحشة", "نفسيتي في الأرض",
+    "مش قادر أكمل", "مش قادرة أكمل", "مش عايش", "مش قادر أعيش",
+    "مش عايز أصحى", "مش عايزة أصحى", "دموع", "بدمع", "قلبي تقيل",
+    "مش حاسس بنفسي", "مش حاسة بنفسي", "ما بحس بشي", "ما في فايدة",
+    "مافي امل", "ما في امل", "حياتي خربت", "خسرت كل حاجة",
+    # English
+    "depressed", "depression", "hopeless", "hopelessness", "empty", "emptiness",
+    "worthless", "meaningless", "no meaning", "no purpose", "cannot go on",
+    "cant go on", "no energy", "no motivation", "crying", "feel nothing",
+    "numb", "isolated", "lonely", "loneliness", "sad", "sadness",
+    "despair", "grief", "miserable", "broken", "lost all hope",
+]
+
+ANXIETY_KEYWORDS = [
+    # Arabic
+    "قلق", "قلقان", "قلقانة", "خوف", "خايف", "خايفة", "توتر", "متوتر", "متوترة",
+    "هلع", "مش مرتاح", "مش مرتاحة", "ذعر", "رهاب", "وسواس",
+    # English
+    "panic", "anxious", "anxiety", "worried", "worry", "fear",
+    "scared", "nervous", "restless", "tense", "phobia", "ocd",
+]
+
+STRESS_KEYWORDS = [
+    # Arabic
+    "ضغط", "ضغوط", "مضغوط", "مضغوطة", "إجهاد", "مجهد", "مجهدة",
+    # English
+    "overwhelmed", "stressed", "stress", "burnout", "exhausted", "overloaded",
+]
+
+
+def keyword_boost(text: str, scores: dict) -> dict:
+    text_lower = text.lower()
+
+    dep_hits = sum(1 for kw in DEPRESSION_KEYWORDS if kw.lower() in text_lower)
+    anx_hits = sum(1 for kw in ANXIETY_KEYWORDS if kw.lower() in text_lower)
+    str_hits = sum(1 for kw in STRESS_KEYWORDS if kw.lower() in text_lower)
+
+    if dep_hits == 0 and anx_hits == 0 and str_hits == 0:
+        return scores
+
+    s = dict(scores)
+
+    if dep_hits > 0 and dep_hits >= anx_hits and dep_hits >= str_hits:
+        boost = min(0.55 + dep_hits * 0.10, 0.85)
+        s["depression"] = boost
+        remaining = 1.0 - boost
+        total_rest = s["anxiety"] + s["stress"]
+        if total_rest > 0:
+            s["anxiety"] = round(remaining * s["anxiety"] / total_rest, 4)
+            s["stress"] = round(remaining * s["stress"] / total_rest, 4)
+        s["depression"] = round(boost, 4)
+
+    elif anx_hits > 0 and anx_hits >= dep_hits and anx_hits >= str_hits:
+        boost = min(0.55 + anx_hits * 0.10, 0.85)
+        s["anxiety"] = boost
+        remaining = 1.0 - boost
+        total_rest = s["depression"] + s["stress"]
+        if total_rest > 0:
+            s["depression"] = round(remaining * s["depression"] / total_rest, 4)
+            s["stress"] = round(remaining * s["stress"] / total_rest, 4)
+        s["anxiety"] = round(boost, 4)
+
+    elif str_hits > 0 and str_hits >= dep_hits and str_hits >= anx_hits:
+        boost = min(0.55 + str_hits * 0.10, 0.85)
+        s["stress"] = boost
+        remaining = 1.0 - boost
+        total_rest = s["depression"] + s["anxiety"]
+        if total_rest > 0:
+            s["depression"] = round(remaining * s["depression"] / total_rest, 4)
+            s["anxiety"] = round(remaining * s["anxiety"] / total_rest, 4)
+        s["stress"] = round(boost, 4)
+
+    total = sum(s.values())
+    if total > 0:
+        s = {k: round(v / total, 4) for k, v in s.items()}
+
+    return s
+
+
 @lru_cache(maxsize=1)
 def load_xlmr():
     model_id = os.getenv("HF_MODEL_ID", "AliSakr9997/Mental-XLMR-Model")
@@ -71,7 +160,9 @@ def predict_text(text: str) -> dict:
     inputs = tokenizer(combined, return_tensors="pt", truncation=True, max_length=192, padding=True)
     with torch.no_grad():
         probs = torch.softmax(model(**inputs).logits, dim=-1).squeeze().numpy()
-    return {c: round(float(p), 4) for c, p in zip(le.classes_, probs)}
+    raw_scores = {c: round(float(p), 4) for c, p in zip(le.classes_, probs)}
+    boosted = keyword_boost(text + " " + text_en, raw_scores)
+    return boosted
 
 
 def predict_survey(answers: list) -> dict:

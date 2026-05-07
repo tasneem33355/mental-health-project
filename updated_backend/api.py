@@ -223,6 +223,7 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
     primary = max(final_scores, key=final_scores.get)
     clinical = calculate_dass_clinical_score(payload.survey_answers)
     rec = get_recommendations(primary, final_scores[primary], payload.text)
+    created_at = datetime.utcnow().isoformat() + "Z"
 
     # Save to PostgreSQL if DB is connected
     if db:
@@ -238,8 +239,11 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
 
     return {
         "analysis_id": None,
-        "primary": primary,
-        "scores": final_scores,
+        "primary_condition": primary,
+        "fused_scores": final_scores,
+        "text_scores": text_scores,
+        "survey_scores": survey_scores,
+        "clinical_scoring": clinical,
         "severity": rec.get("severity"),
         "cause": rec.get("cause"),
         "recommendations": {
@@ -251,7 +255,7 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
             "referral_ar": rec.get("referral_ar", ""),
         },
         "suicidal_flag": rec.get("suicidal_flag", False),
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": created_at,
     }
 
 # Flutter-compatible endpoint (used by api_service.dart)
@@ -264,6 +268,7 @@ async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(g
         primary = max(final_scores, key=final_scores.get)
         clinical = calculate_dass_clinical_score(request.survey_answers)
         rec = get_recommendations(primary, final_scores[primary], request.text)
+        created_at = datetime.utcnow().isoformat() + "Z"
 
         # Save to PostgreSQL if DB is connected
         if db:
@@ -279,12 +284,24 @@ async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(g
                 print(f"DB save error: {e}")
 
         return {
+            "analysis_id": None,
             "primary_condition": primary,
             "fused_scores": final_scores,
             "text_scores": text_scores,
             "survey_scores": survey_scores,
             "clinical_scoring": clinical,
-            "recommendations": rec
+            "severity": rec.get("severity"),
+            "cause": rec.get("cause"),
+            "recommendations": {
+                "tips_en": rec.get("tips_en", []),
+                "tips_ar": rec.get("tips_ar", []),
+                "resources_en": rec.get("resources_en", []),
+                "resources_ar": rec.get("resources_ar", []),
+                "referral_en": rec.get("referral_en", ""),
+                "referral_ar": rec.get("referral_ar", ""),
+            },
+            "suicidal_flag": rec.get("suicidal_flag", False),
+            "created_at": created_at,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

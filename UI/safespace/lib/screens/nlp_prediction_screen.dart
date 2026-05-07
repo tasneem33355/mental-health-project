@@ -64,7 +64,7 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
       final response = await ApiService.analyzeMentalHealth(text, List.filled(42, 0));
       
       setState(() {
-        _predictionResults = response['text_scores'];
+        _predictionResults = response['text_scores'] ?? response['fused_scores'];
         _isLoading = false;
       });
     } catch (e) {
