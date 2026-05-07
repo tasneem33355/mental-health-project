@@ -9,7 +9,6 @@ import 'screens/home_screen.dart';
 import 'screens/mood_patterns_screen.dart';
 import 'screens/mood_questionnaire_screen.dart';
 import 'screens/adhd_exercise_screen.dart';
-import 'screens/dass_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/recommendation_screen.dart';
 import 'screens/journal_screen.dart';
@@ -17,7 +16,7 @@ import 'screens/explore_screen.dart';
 import 'screens/wellness_screen.dart';
 import 'screens/bubble_pop_screen.dart';
 import 'screens/color_match_screen.dart';
-import 'screens/nlp_prediction_screen.dart';
+import 'screens/assessment_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -50,14 +49,13 @@ class SafespaceApp extends StatelessWidget {
         '/mood-patterns': (ctx) => const MoodPatternsScreen(),
         '/mood-questionnaire': (ctx) => const MoodQuestionnaireScreen(),
         '/adhd-exercise': (ctx) => const AdhdExerciseScreen(),
-        '/dass': (ctx) => const DassQuestionnaireScreen(),
+        '/assessment': (ctx) => const AssessmentScreen(),
         '/profile': (ctx) => const ProfileScreen(),
         '/morning-ritual': (ctx) => const RecommendationScreen(timeOfDay: 'Morning'),
         '/nightly-unwind': (ctx) => const RecommendationScreen(timeOfDay: 'Evening'),
         '/journal': (ctx) => const JournalScreen(),
         '/bubble-pop': (ctx) => const BubblePopScreen(),
         '/color-match': (ctx) => const ColorMatchScreen(),
-        '/nlp-prediction': (ctx) => const NlpPredictionScreen(),
       },
     );
   }

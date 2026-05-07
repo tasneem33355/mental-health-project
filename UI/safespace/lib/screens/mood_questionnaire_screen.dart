@@ -123,7 +123,7 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
 
   Widget _buildStressCard() {
     final result = _stressLevel != null
-        ? (_stressLevel! < 2 ? 'You feel calm 😌' : 'You feel a little tense, but man...')
+        ? (_stressLevel! < 2 ? 'You feel calm 😌' : 'You feel a little tense today.')
         : null;
     final badge = _stressLevel != null && _stressLevel! >= 3
         ? 'Moderate'
@@ -172,7 +172,7 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
       result = 'Your energy feels moderate';
       resultColor = AppTheme.orange;
     } else {
-      result = 'Your energy feels steady and posi...';
+      result = 'Your energy feels steady and positive.';
       resultColor = AppTheme.green;
     }
     final badge = _energyLevel >= 0.6 ? 'High' : (_energyLevel >= 0.3 ? 'Mid' : 'Low');
@@ -223,8 +223,8 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
   Widget _buildSleepCard() {
     final result = _sleepQuality != null
         ? (_sleepQuality! >= 2
-            ? 'You got enough rest and wok...'
-            : 'You could use more rest...')
+            ? 'You got enough rest and woke up okay.'
+            : 'You could use more rest tonight.')
         : null;
     final badge = _sleepQuality != null && _sleepQuality! >= 2 ? 'Good sleep' : null;
 

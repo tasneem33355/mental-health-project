@@ -165,8 +165,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildActionButtons(BuildContext context) {
     final canCheckIn = AppState.canCheckIn;
     final buttons = [
-      _ActionBtn(icon: Icons.assignment_outlined, label: 'DASS 42\nAssessment',
-          onTap: () => Navigator.pushNamed(context, '/dass')),
+      _ActionBtn(icon: Icons.assignment_outlined, label: 'Full\nAssessment',
+          onTap: () => Navigator.pushNamed(context, '/assessment')),
       _ActionBtn(
           icon: canCheckIn ? Icons.check_circle_outline : Icons.check_circle,
           label: canCheckIn ? 'Check-In' : 'Done\nToday',
@@ -181,8 +181,8 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
       _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log\nMood',
           onTap: () => Navigator.pushNamed(context, '/mood-patterns')),
-      _ActionBtn(icon: Icons.psychology_outlined, label: 'NLP\nAI',
-          onTap: () => Navigator.pushNamed(context, '/nlp-prediction')),
+      _ActionBtn(icon: Icons.psychology_outlined, label: 'Text +\nSurvey',
+          onTap: () => Navigator.pushNamed(context, '/assessment')),
     ];
 
     return Row(
@@ -330,7 +330,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (controller.text == AppState.userPassword || controller.text == '123456') {
+              if (controller.text == AppState.userPassword) {
                 Navigator.pop(ctx);
                 Navigator.pushNamed(context, '/journal');
               } else {

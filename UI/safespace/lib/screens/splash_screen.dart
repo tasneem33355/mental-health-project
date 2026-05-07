@@ -14,6 +14,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnim;
   late Animation<double> _scaleAnim;
+  late Timer _timer;
 
   @override
   void initState() {
@@ -28,13 +29,14 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
+    _timer = Timer(const Duration(seconds: 3), () {
       if (mounted) Navigator.pushReplacementNamed(context, '/onboarding');
     });
   }
 
   @override
   void dispose() {
+    _timer.cancel();
     _controller.dispose();
     super.dispose();
   }

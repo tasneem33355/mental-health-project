@@ -40,6 +40,13 @@ class DassResultsScreen extends StatelessWidget {
     }
   }
 
+  String _formatLabel(String raw) {
+    return raw.replaceAll('_', ' ').split(' ').map((word) {
+      if (word.isEmpty) return word;
+      return word[0].toUpperCase() + word.substring(1).toLowerCase();
+    }).join(' ');
+  }
+
   @override
   Widget build(BuildContext context) {
     // Extract recommendations from API result
@@ -48,6 +55,9 @@ class DassResultsScreen extends StatelessWidget {
     final resourcesEn = (recommendations?['resources_en'] as List?)?.cast<String>() ?? [];
     final referralEn = recommendations?['referral_en'] as String? ?? '';
     final suicidalFlag = apiResult?['suicidal_flag'] as bool? ?? false;
+    final primaryCondition = apiResult?['primary_condition'] as String?;
+    final severity = apiResult?['severity'] as String?;
+    final cause = apiResult?['cause'] as String?;
 
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
@@ -105,7 +115,78 @@ class DassResultsScreen extends StatelessWidget {
                   ],
                 ),
               ),
+            if (suicidalFlag)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgCardLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.red.withOpacity(0.5), width: 1.5),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Crisis Support',
+                      style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (referralEn.isNotEmpty)
+                      Text(
+                        referralEn,
+                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                      ),
+                    if (resourcesEn.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Reach out now:',
+                        style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
+                      ),
+                      const SizedBox(height: 8),
+                      ...resourcesEn.map((resource) => _buildResourceCard(resource)),
+                    ],
+                  ],
+                ),
+              ),
 
+            if (primaryCondition != null || severity != null || cause != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 20),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.bgCardLight,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'AI Summary',
+                      style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    if (primaryCondition != null)
+                      Text(
+                        'Primary: ${_formatLabel(primaryCondition)}',
+                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                      ),
+                    if (severity != null)
+                      Text(
+                        'Severity: ${_formatLabel(severity)}',
+                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                      ),
+                    if (cause != null)
+                      Text(
+                        'Cause: ${_formatLabel(cause)}',
+                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                      ),
+                  ],
+                ),
+              ),
             _buildResultCard('Depression', scores['Depression'] ?? 0),
             const SizedBox(height: 20),
             _buildResultCard('Anxiety', scores['Anxiety'] ?? 0),

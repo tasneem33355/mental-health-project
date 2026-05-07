@@ -1,2 +1,11 @@
-
 push_to_space.py
+temp_space/
+temp_hf_space/
+scrub_rules.txt
+.ipynb_checkpoints/
+*.ipynb
+repo.zip
+data.csv
+*.h5
+*.pkl
+mental_xlmr_final/

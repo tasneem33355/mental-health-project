@@ -14,6 +14,7 @@ class MoodPatternsScreen extends StatefulWidget {
 
 class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
   late Future<List<Map<String, dynamic>>> _historyFuture;
+  int _selectedRangeDays = 7;
 
   @override
   void initState() {
@@ -24,6 +25,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
   @override
   Widget build(BuildContext context) {
     final history = AppState.moodHistory;
+    final filteredHistory = _filterByRange(history, _selectedRangeDays);
 
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
@@ -58,12 +60,16 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
             ),
             const SizedBox(height: 24),
+            _buildStreakCard(history),
+            const SizedBox(height: 20),
 
             // Daily Check-in Graph
             const Text(
               'Daily Check-ins',
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
+            const SizedBox(height: 12),
+            _buildRangeSelector(),
             const SizedBox(height: 16),
             _buildLegend(),
             const SizedBox(height: 16),
@@ -97,11 +103,11 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                         interval: 1,
                         getTitlesWidget: (value, meta) {
                           int index = value.toInt();
-                          if (index >= 0 && index < history.length) {
+                          if (index >= 0 && index < filteredHistory.length) {
                             return Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
-                                DateFormat('E').format(history[index].date),
+                                DateFormat('E').format(filteredHistory[index].date),
                                 style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
                               ),
                             );
@@ -126,32 +132,32 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                   ),
                   borderData: FlBorderData(show: false),
                   minX: 0,
-                  maxX: history.isEmpty ? 1 : (history.length - 1).toDouble(),
-                  minY: 0,
-                  maxY: 4.5,
-                  lineBarsData: history.isEmpty ? [] : [
-                    // Stress Level (0-4)
-                    _lineData(
-                      history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.stress.toDouble())).toList(),
-                      AppTheme.red,
-                    ),
-                    // Energy Level (0.0-1.0 mapped to 0-4)
-                    _lineData(
-                      history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.energy * 4)).toList(),
-                      AppTheme.orange,
-                    ),
-                    // Sleep Quality (0-4)
-                    _lineData(
-                      history.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.sleep.toDouble())).toList(),
-                      AppTheme.green,
-                    ),
-                  ],
+                    maxX: filteredHistory.isEmpty ? 1 : (filteredHistory.length - 1).toDouble(),
+                    minY: 0,
+                    maxY: 4.5,
+                    lineBarsData: filteredHistory.isEmpty ? [] : [
+                      // Stress Level (0-4)
+                      _lineData(
+                        filteredHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.stress.toDouble())).toList(),
+                        AppTheme.red,
+                      ),
+                      // Energy Level (0.0-1.0 mapped to 0-4)
+                      _lineData(
+                        filteredHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.energy * 4)).toList(),
+                        AppTheme.orange,
+                      ),
+                      // Sleep Quality (0-4)
+                      _lineData(
+                        filteredHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.sleep.toDouble())).toList(),
+                        AppTheme.green,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ),
 
             const SizedBox(height: 32),
-            _buildInsights(history),
+            _buildInsights(filteredHistory),
             const SizedBox(height: 32),
 
             // Assessment History Graph
@@ -227,8 +233,8 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => Navigator.pushNamed(context, '/dass'),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushNamed(context, '/assessment'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryPurple.withOpacity(0.2),
                     foregroundColor: AppTheme.accentPurple,
@@ -427,6 +433,112 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildRangeSelector() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _rangeChip(7),
+        _rangeChip(14),
+        _rangeChip(30),
+      ],
+    );
+  }
+
+  Widget _rangeChip(int days) {
+    final selected = _selectedRangeDays == days;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedRangeDays = days),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.primaryPurple.withOpacity(0.2) : AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppTheme.primaryPurple : AppTheme.textDimmed.withOpacity(0.2),
+          ),
+        ),
+        child: Text(
+          'Last $days days',
+          style: TextStyle(
+            color: selected ? AppTheme.textWhite : AppTheme.textGrey,
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStreakCard(List<MoodRecord> history) {
+    final streak = _calculateStreak(history);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryPurple.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.local_fire_department, color: AppTheme.accentPurple, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Check-in Streak',
+                  style: TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.w600, fontSize: 15),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  streak == 0 ? 'Start your streak today.' : '$streak day${streak == 1 ? '' : 's'} in a row.',
+                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  int _calculateStreak(List<MoodRecord> history) {
+    if (history.isEmpty) return 0;
+    final sorted = List<MoodRecord>.from(history)
+      ..sort((a, b) => a.date.compareTo(b.date));
+    int streak = 0;
+    DateTime day = DateTime.now();
+    for (int i = sorted.length - 1; i >= 0; i--) {
+      final entryDay = DateTime(sorted[i].date.year, sorted[i].date.month, sorted[i].date.day);
+      final targetDay = DateTime(day.year, day.month, day.day);
+      if (entryDay == targetDay) {
+        streak += 1;
+        day = day.subtract(const Duration(days: 1));
+      } else if (entryDay.isBefore(targetDay)) {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  List<MoodRecord> _filterByRange(List<MoodRecord> history, int days) {
+    if (history.isEmpty) return [];
+    final start = DateTime.now().subtract(Duration(days: days - 1));
+    return history.where((h) => h.date.isAfter(start) || _sameDay(h.date, start)).toList();
+  }
+
+  bool _sameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   Widget _insightCard(String title, String desc, IconData icon) {
