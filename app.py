@@ -19,7 +19,6 @@ import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from deep_translator import GoogleTranslator
-import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 from recommendations import get_recommendations
 
@@ -136,7 +135,6 @@ def load_xlmr():
 
 @st.cache_resource
 def load_survey():
-    import pickle, numpy as np
     scaler  = pickle.load(open(os.path.join(os.path.dirname(__file__), "scaler.pkl"), "rb"))
     weights = pickle.load(open(os.path.join(os.path.dirname(__file__), "model_weights.pkl"), "rb"))
 
@@ -160,25 +158,6 @@ def clean_text(text):
     return re.sub(r'\s+', ' ', text).strip()
 
 def translate_to_en(text):
-    # Try Anthropic API first (reliable, no network restrictions)
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
-        msg = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=256,
-            messages=[{
-                "role": "user",
-                "content": (
-                    f"Translate the following text to English. "
-                    f"Return ONLY the translation, nothing else:\n{text}"
-                )
-            }]
-        )
-        return msg.content[0].text.strip()
-    except Exception:
-        pass
-    # Fallback: GoogleTranslator
     try:
         return GoogleTranslator(source="auto", target="en").translate(text)
     except Exception:
@@ -209,21 +188,25 @@ DEPRESSION_KEYWORDS = [
 ]
 
 ANXIETY_KEYWORDS = [
+    # عربي
     "قلق", "قلقان", "قلقانة", "خوف", "خايف", "خايفة", "توتر", "متوتر", "متوترة",
     "هلع", "مش مرتاح", "مش مرتاحة", "ذعر", "رهاب", "وسواس",
+    # إنجليزي
     "panic", "anxious", "anxiety", "worried", "worry", "fear",
     "scared", "nervous", "restless", "tense", "phobia", "ocd",
 ]
 
 STRESS_KEYWORDS = [
+    # عربي
     "ضغط", "ضغوط", "مضغوط", "مضغوطة", "إجهاد", "مجهد", "مجهدة",
+    # إنجليزي
     "overwhelmed", "stressed", "stress", "burnout", "exhausted", "overloaded",
 ]
 
 def keyword_boost(text: str, scores: dict) -> dict:
     """
     يعوّض الـ stress bias في الموديل عن طريق override قوي
-    لما تكون كلمات depression أو anxiety واضحة في النص.
+    لما تكون كلمات depression أو anxiety أو stress واضحة في النص.
     """
     text_lower = text.lower()
 
@@ -258,7 +241,16 @@ def keyword_boost(text: str, scores: dict) -> dict:
             s["stress"]     = round(remaining * s["stress"]     / total_rest, 4)
         s["anxiety"] = round(boost, 4)
 
-    # stress keywords بس → سيب الموديل يحكم (هو أصلاً بيقول stress)
+    elif str_hits > 0 and str_hits >= dep_hits and str_hits >= anx_hits:
+        # stress كلمات واضحة — override قوي
+        boost = min(0.55 + str_hits * 0.10, 0.85)
+        s["stress"] = boost
+        remaining = 1.0 - boost
+        total_rest = s["depression"] + s["anxiety"]
+        if total_rest > 0:
+            s["depression"] = round(remaining * s["depression"] / total_rest, 4)
+            s["anxiety"]    = round(remaining * s["anxiety"]    / total_rest, 4)
+        s["stress"] = round(boost, 4)
 
     # normalize
     total = sum(s.values())
@@ -273,7 +265,7 @@ def predict_text(text: str) -> dict:
     text_en  = translate_to_en(cleaned)
     combined = (text_en + " [SEP] " + cleaned) if text_en else cleaned
     inputs   = xlmr_tokenizer(combined, return_tensors="pt",
-                         truncation=True, max_length=192, padding=True)
+                               truncation=True, max_length=192, padding=True)
     with torch.no_grad():
         probs = torch.softmax(xlmr_model(**inputs).logits, dim=-1).squeeze().numpy()
     raw_scores = {c: round(float(p), 4) for c, p in zip(le, probs)}
@@ -462,7 +454,7 @@ if predict_btn:
 
     # ── RECOMMENDATIONS ───────────────────────────────────────────────────────
     st.markdown("---")
-    st.markdown(f"## 💡 Recommendations / التوصيات")
+    st.markdown("## 💡 Recommendations / التوصيات")
 
     col_tips, col_res = st.columns(2)
 
