@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../main.dart';
 
 class DassResultsScreen extends StatelessWidget {
@@ -20,7 +21,8 @@ class DassResultsScreen extends StatelessWidget {
       if (score <= 14) return 'Moderate';
       if (score <= 19) return 'Severe';
       return 'Extremely Severe';
-    } else { // Stress
+    } else {
+      // Stress
       if (score <= 14) return 'Normal';
       if (score <= 18) return 'Mild';
       if (score <= 25) return 'Moderate';
@@ -31,12 +33,18 @@ class DassResultsScreen extends StatelessWidget {
 
   Color _getColor(String level) {
     switch (level) {
-      case 'Normal': return AppTheme.green;
-      case 'Mild': return Colors.yellow;
-      case 'Moderate': return AppTheme.orange;
-      case 'Severe': return AppTheme.red;
-      case 'Extremely Severe': return const Color(0xFF8B0000);
-      default: return AppTheme.textGrey;
+      case 'Normal':
+        return AppTheme.green;
+      case 'Mild':
+        return Colors.yellow;
+      case 'Moderate':
+        return AppTheme.orange;
+      case 'Severe':
+        return AppTheme.red;
+      case 'Extremely Severe':
+        return const Color(0xFF8B0000);
+      default:
+        return AppTheme.textGrey;
     }
   }
 
@@ -52,7 +60,8 @@ class DassResultsScreen extends StatelessWidget {
     // Extract recommendations from API result
     final recommendations = apiResult?['recommendations'];
     final tipsEn = (recommendations?['tips_en'] as List?)?.cast<String>() ?? [];
-    final resourcesEn = (recommendations?['resources_en'] as List?)?.cast<String>() ?? [];
+    final resourcesEn =
+        (recommendations?['resources_en'] as List?)?.cast<String>() ?? [];
     final referralEn = recommendations?['referral_en'] as String? ?? '';
     final suicidalFlag = apiResult?['suicidal_flag'] as bool? ?? false;
     final primaryCondition = apiResult?['primary_condition'] as String?;
@@ -68,7 +77,8 @@ class DassResultsScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Your Assessment Results', style: TextStyle(color: AppTheme.textWhite)),
+        title: const Text('Your Assessment Results',
+            style: TextStyle(color: AppTheme.textWhite)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -90,11 +100,13 @@ class DassResultsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.red.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.red.withOpacity(0.5), width: 2),
+                  border: Border.all(
+                      color: AppTheme.red.withOpacity(0.5), width: 2),
                 ),
                 child: const Row(
                   children: [
-                    Icon(Icons.warning_amber_rounded, color: AppTheme.red, size: 28),
+                    Icon(Icons.warning_amber_rounded,
+                        color: AppTheme.red, size: 28),
                     SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -102,12 +114,18 @@ class DassResultsScreen extends StatelessWidget {
                         children: [
                           Text(
                             'Please Reach Out for Help',
-                            style: TextStyle(color: AppTheme.red, fontSize: 16, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: AppTheme.red,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold),
                           ),
                           SizedBox(height: 4),
                           Text(
                             'Your responses indicate you may need immediate support. Please contact a mental health professional or crisis helpline.',
-                            style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                            style: TextStyle(
+                                color: AppTheme.textGrey,
+                                fontSize: 13,
+                                height: 1.4),
                           ),
                         ],
                       ),
@@ -123,82 +141,57 @@ class DassResultsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.bgCardLight,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.red.withOpacity(0.5), width: 1.5),
+                  border: Border.all(
+                      color: AppTheme.red.withOpacity(0.5), width: 1.5),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Crisis Support',
-                      style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: AppTheme.textWhite,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 8),
                     if (referralEn.isNotEmpty)
                       Text(
                         referralEn,
-                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                        style: const TextStyle(
+                            color: AppTheme.textGrey,
+                            fontSize: 13,
+                            height: 1.4),
                       ),
                     if (resourcesEn.isNotEmpty) ...[
                       const SizedBox(height: 12),
                       const Text(
                         'Reach out now:',
-                        style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
+                        style:
+                            TextStyle(color: AppTheme.textGrey, fontSize: 12),
                       ),
                       const SizedBox(height: 8),
-                      ...resourcesEn.map((resource) => _buildResourceCard(resource)),
+                      ...resourcesEn
+                          .map((resource) => _buildResourceCard(resource)),
                     ],
                   ],
                 ),
               ),
 
             if (primaryCondition != null || severity != null || cause != null)
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 20),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.bgCardLight,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'AI Summary',
-                      style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    if (primaryCondition != null)
-                      Text(
-                        'Primary: ${_formatLabel(primaryCondition)}',
-                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
-                      ),
-                    if (severity != null)
-                      Text(
-                        'Severity: ${_formatLabel(severity)}',
-                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
-                      ),
-                    if (cause != null)
-                      Text(
-                        'Cause: ${_formatLabel(cause)}',
-                        style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
-                      ),
-                  ],
-                ),
-              ),
-            _buildResultCard('Depression', scores['Depression'] ?? 0),
-            const SizedBox(height: 20),
-            _buildResultCard('Anxiety', scores['Anxiety'] ?? 0),
-            const SizedBox(height: 20),
-            _buildResultCard('Stress', scores['Stress'] ?? 0),
+              _buildAiSummaryGrid(primaryCondition, severity, cause),
+            const SizedBox(height: 24),
+            _buildScorePieChart(scores),
             const SizedBox(height: 32),
 
             // Recommendations Section
             if (tipsEn.isNotEmpty) ...[
               const Text(
                 'Personalized Tips',
-                style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               ...tipsEn.map((tip) => _buildTipCard(tip)),
@@ -209,7 +202,10 @@ class DassResultsScreen extends StatelessWidget {
             if (resourcesEn.isNotEmpty) ...[
               const Text(
                 'Helpful Resources',
-                style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
               ...resourcesEn.map((resource) => _buildResourceCard(resource)),
@@ -224,11 +220,13 @@ class DassResultsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppTheme.primaryPurple.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.primaryPurple.withOpacity(0.3)),
+                  border: Border.all(
+                      color: AppTheme.primaryPurple.withOpacity(0.3)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.local_hospital_outlined, color: AppTheme.accentPurple, size: 24),
+                    const Icon(Icons.local_hospital_outlined,
+                        color: AppTheme.accentPurple, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -236,12 +234,18 @@ class DassResultsScreen extends StatelessWidget {
                         children: [
                           const Text(
                             'Professional Guidance',
-                            style: TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: AppTheme.textWhite,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             referralEn,
-                            style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                            style: const TextStyle(
+                                color: AppTheme.textGrey,
+                                fontSize: 13,
+                                height: 1.4),
                           ),
                         ],
                       ),
@@ -255,12 +259,16 @@ class DassResultsScreen extends StatelessWidget {
             // What does this mean section
             const Text(
               'What does this mean?',
-              style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: AppTheme.textWhite,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             const Text(
               'These scales measure the intensity of emotional states. They are not a clinical diagnosis but a way to help you understand your feelings better.',
-              style: TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.5),
+              style: TextStyle(
+                  color: AppTheme.textGrey, fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 40),
             SizedBox(
@@ -289,13 +297,15 @@ class DassResultsScreen extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.only(top: 2),
-            child: const Icon(Icons.lightbulb_outline, color: AppTheme.yellow, size: 20),
+            child: const Icon(Icons.lightbulb_outline,
+                color: AppTheme.yellow, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               tip,
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.4),
+              style: const TextStyle(
+                  color: AppTheme.textGrey, fontSize: 14, height: 1.4),
             ),
           ),
         ],
@@ -316,13 +326,15 @@ class DassResultsScreen extends StatelessWidget {
         children: [
           Container(
             margin: const EdgeInsets.only(top: 2),
-            child: const Icon(Icons.menu_book_outlined, color: AppTheme.accentPurple, size: 20),
+            child: const Icon(Icons.menu_book_outlined,
+                color: AppTheme.accentPurple, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               resource,
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.4),
+              style: const TextStyle(
+                  color: AppTheme.textGrey, fontSize: 14, height: 1.4),
             ),
           ),
         ],
@@ -349,10 +361,14 @@ class DassResultsScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: AppTheme.textWhite,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -360,7 +376,8 @@ class DassResultsScreen extends StatelessWidget {
                 ),
                 child: Text(
                   level,
-                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: color, fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -372,7 +389,8 @@ class DassResultsScreen extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
-                    value: score / 56, // Max possible score is 56 per scale (14 * 4 with 5 options)
+                    value: score /
+                        56, // Max possible score is 56 per scale (14 * 4 with 5 options)
                     backgroundColor: AppTheme.bgDark,
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                     minHeight: 8,
@@ -390,4 +408,194 @@ class DassResultsScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildAiSummaryGrid(
+      String? primaryCondition, String? severity, String? cause) {
+    final items = [
+      _SummaryTile(
+        label: 'Primary',
+        value: primaryCondition != null ? _formatLabel(primaryCondition) : '—',
+        color: AppTheme.accentPurple,
+        icon: Icons.favorite_border,
+      ),
+      _SummaryTile(
+        label: 'Severity',
+        value: severity != null ? _formatLabel(severity) : '—',
+        color: AppTheme.orange,
+        icon: Icons.speed,
+      ),
+      _SummaryTile(
+        label: 'Cause',
+        value: cause != null ? _formatLabel(cause) : '—',
+        color: AppTheme.green,
+        icon: Icons.bubble_chart_outlined,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'AI Summary',
+          style: TextStyle(
+              color: AppTheme.textWhite,
+              fontSize: 18,
+              fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _summaryCard(items[0], const EdgeInsets.only(right: 10)),
+            _summaryCard(items[1], const EdgeInsets.only(right: 10)),
+            _summaryCard(items[2], EdgeInsets.zero),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _summaryCard(_SummaryTile item, EdgeInsets margin) {
+    return Expanded(
+      child: Container(
+        margin: margin,
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: item.color.withOpacity(0.35)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(item.icon, color: item.color, size: 20),
+            const SizedBox(height: 10),
+            Text(
+              item.label,
+              style: const TextStyle(color: AppTheme.textGrey, fontSize: 11),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                  color: AppTheme.textWhite,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildScorePieChart(Map<String, int> scores) {
+    final depression = (scores['Depression'] ?? 0).toDouble();
+    final anxiety = (scores['Anxiety'] ?? 0).toDouble();
+    final stress = (scores['Stress'] ?? 0).toDouble();
+    final total = depression + anxiety + stress;
+    final depressionPct = total == 0 ? 0 : (depression / total) * 100;
+    final anxietyPct = total == 0 ? 0 : (anxiety / total) * 100;
+    final stressPct = total == 0 ? 0 : (stress / total) * 100;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Score Breakdown',
+            style: TextStyle(
+                color: AppTheme.textWhite,
+                fontSize: 18,
+                fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            height: 180,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 4,
+                centerSpaceRadius: 45,
+                sections: [
+                  PieChartSectionData(
+                    color: AppTheme.accentPurple,
+                    value: depressionPct,
+                    title: '${depressionPct.toStringAsFixed(0)}%',
+                    radius: 50,
+                    titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  PieChartSectionData(
+                    color: AppTheme.orange,
+                    value: anxietyPct,
+                    title: '${anxietyPct.toStringAsFixed(0)}%',
+                    radius: 50,
+                    titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600),
+                  ),
+                  PieChartSectionData(
+                    color: AppTheme.green,
+                    value: stressPct,
+                    title: '${stressPct.toStringAsFixed(0)}%',
+                    radius: 50,
+                    titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _pieLegend('Depression', AppTheme.accentPurple),
+              _pieLegend('Anxiety', AppTheme.orange),
+              _pieLegend('Stress', AppTheme.green),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _pieLegend(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text(label,
+            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+      ],
+    );
+  }
+}
+
+class _SummaryTile {
+  final String label;
+  final String value;
+  final Color color;
+  final IconData icon;
+
+  const _SummaryTile({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
 }

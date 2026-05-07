@@ -244,7 +244,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                     minX: 0,
                     maxX: (data.length - 1).toDouble(),
                     minY: 0,
-                    maxY: 56, // Max DASS score with 5 options
+                    maxY: 42, // Max DASS score with 4 options (14 * 3)
                     lineBarsData: [
                       // Depression Line
                       _createDassLineData(data, 'depression', AppTheme.accentPurple),
@@ -471,25 +471,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
   }
 
   Widget _buildInsights(List<MoodRecord> history) {
-    if (history.isEmpty) return const SizedBox();
-    
-    final last = history.last;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Daily Insights',
-            style: TextStyle(
-                color: AppTheme.textWhite,
-                fontSize: 18,
-                fontWeight: FontWeight.w600)),
-        const SizedBox(height: 14),
-        _insightCard(
-          'Mood Summary',
-          'Your energy has been ${last.energy > 0.7 ? 'high' : 'stable'} today. ${last.stress > 2 ? 'Try some breathing exercises to lower your stress.' : 'You seem to be in a calm state.'}',
-          Icons.auto_awesome,
-        ),
-      ],
-    );
+    return const SizedBox();
   }
 
   Widget _buildRangeSelector() {

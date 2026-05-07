@@ -134,7 +134,7 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'Lorem ipsum dolor sit amet consectetur. Dictum auctor pharetra.',
+              'Short, practical exercises to help you focus, reset, and build steady habits.',
               style: TextStyle(
                   color: AppTheme.textGrey, fontSize: 13, height: 1.4),
             ),

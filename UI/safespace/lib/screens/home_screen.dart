@@ -181,8 +181,6 @@ class _HomeScreenState extends State<HomeScreen> {
           }),
       _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log\nMood',
           onTap: () => Navigator.pushNamed(context, '/mood-patterns')),
-      _ActionBtn(icon: Icons.psychology_outlined, label: 'Text +\nSurvey',
-          onTap: () => Navigator.pushNamed(context, '/assessment')),
     ];
 
     return Row(

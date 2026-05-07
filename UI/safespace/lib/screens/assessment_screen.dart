@@ -139,6 +139,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
   @override
   Widget build(BuildContext context) {
     double progress = (_currentIndex + 1) / dassQuestions.length;
+    final isIntroPage = _currentIndex == 0;
 
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
@@ -211,8 +212,10 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTextCard(),
-                      const SizedBox(height: 24),
+                      if (index == 0) _buildIntroCard(),
+                      if (index == 0) const SizedBox(height: 16),
+                      if (index == 0) _buildTextCard(),
+                      if (index == 0) const SizedBox(height: 24),
                       _buildQuestionCard(question.text, index),
                     ],
                   ),
@@ -275,11 +278,6 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             'Write in Arabic or English. This text is used with the survey for a combined analysis.',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4),
           ),
-          const SizedBox(height: 6),
-          const Text(
-            'This assessment is for awareness only and not a medical diagnosis.',
-            style: TextStyle(color: AppTheme.textDimmed, fontSize: 11, height: 1.4),
-          ),
           const SizedBox(height: 12),
           TextField(
             controller: _textController,
@@ -288,6 +286,31 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             decoration: const InputDecoration(
               hintText: 'Type how you feel...'
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntroCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.bgCardLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'Quick Brief',
+            style: TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'This assessment combines your written reflection with 42 questions. It helps you understand your mood patterns, not a medical diagnosis.',
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4),
           ),
         ],
       ),

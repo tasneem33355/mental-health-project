@@ -16,8 +16,8 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
   double _energyLevel = 0.7;
   int? _sleepQuality; // 0=Poor..4=Amazing
 
-  final List<String> _stressEmojis = ['😌', '🙂', '😐', '😤', '😰'];
-  final List<String> _stressLabels = ['Calm', '', '', '', 'Very stressed'];
+  final List<String> _stressEmojis = ['😌', '🙂', '😐', '😣', '😰'];
+  final List<String> _stressLabels = ['Calm', 'Light', 'Neutral', 'Tense', 'Very stressed'];
   final List<String> _sleepOptions = ['Poor', 'Okay', 'Good', 'Great', 'Amazing'];
 
   final List<Color> _sleepColors = [
@@ -126,7 +126,7 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
         ? (_stressLevel! < 2 ? 'You feel calm 😌' : 'You feel a little tense today.')
         : null;
     final badge = _stressLevel != null && _stressLevel! >= 3
-        ? 'Moderate'
+        ? 'High'
         : null;
 
     return _QuestionCard(
@@ -153,8 +153,20 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
                     ? Border.all(color: AppTheme.primaryPurple)
                     : null,
               ),
-              child: Text(_stressEmojis[i],
-                  style: TextStyle(fontSize: selected ? 28 : 22)),
+              child: Column(
+                children: [
+                  Text(_stressEmojis[i],
+                      style: TextStyle(fontSize: selected ? 28 : 22)),
+                  const SizedBox(height: 4),
+                  Text(
+                    _stressLabels[i],
+                    style: TextStyle(
+                      color: selected ? AppTheme.textWhite : AppTheme.textDimmed,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         }),
@@ -187,35 +199,37 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
       resultColor: resultColor,
       badge: badge,
       badgeColor: badgeColor,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('Very low',
-                  style: TextStyle(color: AppTheme.textGrey, fontSize: 11)),
-              Text('Very high',
-                  style: TextStyle(color: AppTheme.textGrey, fontSize: 11)),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: AppTheme.primaryPurple,
-              inactiveTrackColor: AppTheme.bgCardLight,
-              thumbColor: Colors.white,
-              overlayColor: AppTheme.primaryPurple.withOpacity(0.2),
-              trackHeight: 6,
-              thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 10),
-            ),
-            child: Slider(
-              value: _energyLevel,
-              onChanged: (v) => setState(() => _energyLevel = v),
-            ),
-          ),
+          _energyChoice('Low', 0.2, AppTheme.red),
+          _energyChoice('Medium', 0.5, AppTheme.orange),
+          _energyChoice('High', 0.8, AppTheme.green),
         ],
+      ),
+    );
+  }
+
+  Widget _energyChoice(String label, double value, Color color) {
+    final selected = (_energyLevel - value).abs() < 0.01;
+    return GestureDetector(
+      onTap: () => setState(() => _energyLevel = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: selected ? color.withOpacity(0.2) : AppTheme.bgCardLight,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: selected ? color : AppTheme.textDimmed.withOpacity(0.2)),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? color : AppTheme.textGrey,
+            fontSize: 12,
+            fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
       ),
     );
   }
