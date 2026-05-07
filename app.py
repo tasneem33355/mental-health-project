@@ -11,16 +11,13 @@ Files needed:
 Install:
   pip install streamlit transformers torch tensorflow scikit-learn deep-translator
 """
-
 import sys, os
 sys.path.append(os.path.dirname(__file__))
 import re, pickle, warnings
-
 import numpy as np
 import streamlit as st
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
-
 from deep_translator import GoogleTranslator
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
@@ -124,27 +121,18 @@ CAUSE_AR = {
 # ── LOAD MODELS ───────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_xlmr():
-    import pickle, os
-    token = None
-    try:
-        token = st.secrets.get("HF_TOKEN")
-    except Exception:
-        token = None
-    if not token:
-        token = os.getenv("HF_TOKEN")
-    kwargs = {"token": token} if token else {}
-    tokenizer = AutoTokenizer.from_pretrained(
-        "tasneem33355/mental-xlmr", **kwargs
+    token = st.secrets["HF_TOKEN"]
+    xlmr_tokenizer = AutoTokenizer.from_pretrained(
+        "tasneem33355/mental-xlmr", token=token
     )
     model = AutoModelForSequenceClassification.from_pretrained(
-        "tasneem33355/mental-xlmr", **kwargs
+        "tasneem33355/mental-xlmr", token=token
     )
-
-    le_path = os.path.join(os.path.dirname(__file__), "mental_xlmr_final", "label_encoder.pkl")
-    with open(le_path, "rb") as f:
-        le = pickle.load(f)
     model.eval()
-    return tokenizer, model, le
+    # Hardcoded — LabelEncoder على ['anxiety','depression','stress'] دايماً بترتّب alphabetically
+    # 0=anxiety, 1=depression, 2=stress
+    classes = ["anxiety", "depression", "stress"]
+    return xlmr_tokenizer, model, classes
 
 @st.cache_resource
 def load_survey():
@@ -162,7 +150,7 @@ def load_survey():
 
     return scaler, predict
 
-tokenizer, xlmr_model, le = load_xlmr()
+xlmr_tokenizer, xlmr_model, le = load_xlmr()
 scaler, survey_predict = load_survey()
 
 # ── HELPERS ───────────────────────────────────────────────────────────────────
@@ -172,20 +160,126 @@ def clean_text(text):
     return re.sub(r'\s+', ' ', text).strip()
 
 def translate_to_en(text):
+    # Try Anthropic API first (reliable, no network restrictions)
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
+        msg = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=256,
+            messages=[{
+                "role": "user",
+                "content": (
+                    f"Translate the following text to English. "
+                    f"Return ONLY the translation, nothing else:\n{text}"
+                )
+            }]
+        )
+        return msg.content[0].text.strip()
+    except Exception:
+        pass
+    # Fallback: GoogleTranslator
     try:
         return GoogleTranslator(source="auto", target="en").translate(text)
     except Exception:
         return ""
 
+# ── KEYWORD OVERRIDE ─────────────────────────────────────────────────────────
+DEPRESSION_KEYWORDS = [
+    # عربي فصيح
+    "اكتئاب", "مكتئب", "مكتئبة", "حزن", "حزين", "حزينة", "يأس", "يائس", "يائسة",
+    "فراغ", "إحساس بالفراغ", "بلا معنى", "لا معنى", "مالهاش معنى", "بلا هدف",
+    "لا أمل", "مفيش أمل", "تعبت من الحياة", "زهقت من الحياة",
+    "مش لاقي معنى", "مش لاقية معنى", "حاسس بالفراغ", "حاسة بالفراغ",
+    "مفيش طاقة", "مفيش رغبة", "بكاء", "عايز أبكي", "عايزة أبكي",
+    "وحيد", "وحيدة", "عزلة", "منعزل", "منعزلة",
+    "إرهاق نفسي", "إرهاق عاطفي", "مش حاسس بحاجة", "مش حاسة بحاجة",
+    # عامية مصرية وشامية
+    "زهقت", "تعبت", "مش طايق", "مش طايقة", "نفسيتي وحشة", "نفسيتي في الأرض",
+    "مش قادر أكمل", "مش قادرة أكمل", "مش عايش", "مش قادر أعيش",
+    "مش عايز أصحى", "مش عايزة أصحى", "دموع", "بدمع", "قلبي تقيل",
+    "مش حاسس بنفسي", "مش حاسة بنفسي", "ما بحس بشي", "ما في فايدة",
+    "مافي امل", "ما في امل", "حياتي خربت", "خسرت كل حاجة",
+    # إنجليزي
+    "depressed", "depression", "hopeless", "hopelessness", "empty", "emptiness",
+    "worthless", "meaningless", "no meaning", "no purpose", "cannot go on",
+    "cant go on", "no energy", "no motivation", "crying", "feel nothing",
+    "numb", "isolated", "lonely", "loneliness", "sad", "sadness",
+    "despair", "grief", "miserable", "broken", "lost all hope",
+]
+
+ANXIETY_KEYWORDS = [
+    "قلق", "قلقان", "قلقانة", "خوف", "خايف", "خايفة", "توتر", "متوتر", "متوترة",
+    "هلع", "مش مرتاح", "مش مرتاحة", "ذعر", "رهاب", "وسواس",
+    "panic", "anxious", "anxiety", "worried", "worry", "fear",
+    "scared", "nervous", "restless", "tense", "phobia", "ocd",
+]
+
+STRESS_KEYWORDS = [
+    "ضغط", "ضغوط", "مضغوط", "مضغوطة", "إجهاد", "مجهد", "مجهدة",
+    "overwhelmed", "stressed", "stress", "burnout", "exhausted", "overloaded",
+]
+
+def keyword_boost(text: str, scores: dict) -> dict:
+    """
+    يعوّض الـ stress bias في الموديل عن طريق override قوي
+    لما تكون كلمات depression أو anxiety واضحة في النص.
+    """
+    text_lower = text.lower()
+
+    dep_hits = sum(1 for kw in DEPRESSION_KEYWORDS if kw.lower() in text_lower)
+    anx_hits = sum(1 for kw in ANXIETY_KEYWORDS   if kw.lower() in text_lower)
+    str_hits = sum(1 for kw in STRESS_KEYWORDS     if kw.lower() in text_lower)
+
+    if dep_hits == 0 and anx_hits == 0 and str_hits == 0:
+        return scores
+
+    s = dict(scores)
+
+    if dep_hits > 0 and dep_hits >= anx_hits and dep_hits >= str_hits:
+        # depression كلمات واضحة — override قوي
+        boost = min(0.55 + dep_hits * 0.10, 0.85)
+        s["depression"] = boost
+        remaining = 1.0 - boost
+        total_rest = s["anxiety"] + s["stress"]
+        if total_rest > 0:
+            s["anxiety"] = round(remaining * s["anxiety"] / total_rest, 4)
+            s["stress"]  = round(remaining * s["stress"]  / total_rest, 4)
+        s["depression"] = round(boost, 4)
+
+    elif anx_hits > 0 and anx_hits >= dep_hits and anx_hits >= str_hits:
+        # anxiety كلمات واضحة — override قوي
+        boost = min(0.55 + anx_hits * 0.10, 0.85)
+        s["anxiety"] = boost
+        remaining = 1.0 - boost
+        total_rest = s["depression"] + s["stress"]
+        if total_rest > 0:
+            s["depression"] = round(remaining * s["depression"] / total_rest, 4)
+            s["stress"]     = round(remaining * s["stress"]     / total_rest, 4)
+        s["anxiety"] = round(boost, 4)
+
+    # stress keywords بس → سيب الموديل يحكم (هو أصلاً بيقول stress)
+
+    # normalize
+    total = sum(s.values())
+    if total > 0:
+        s = {k: round(v / total, 4) for k, v in s.items()}
+
+    return s
+
+
 def predict_text(text: str) -> dict:
     cleaned  = clean_text(text)
     text_en  = translate_to_en(cleaned)
     combined = (text_en + " [SEP] " + cleaned) if text_en else cleaned
-    inputs   = tokenizer(combined, return_tensors="pt",
+    inputs   = xlmr_tokenizer(combined, return_tensors="pt",
                          truncation=True, max_length=192, padding=True)
     with torch.no_grad():
         probs = torch.softmax(xlmr_model(**inputs).logits, dim=-1).squeeze().numpy()
-    return {c: round(float(p), 4) for c, p in zip(le.classes_, probs)}
+    raw_scores = {c: round(float(p), 4) for c, p in zip(le, probs)}
+    # طبّق الـ keyword boost على النص الأصلي + الترجمة
+    boosted = keyword_boost(text + " " + text_en, raw_scores)
+    return boosted
 
 def predict_survey(answers: list) -> dict:
     data = scaler.transform(np.array(answers).reshape(1, -1))
