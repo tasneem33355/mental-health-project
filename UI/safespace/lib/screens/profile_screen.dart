@@ -96,7 +96,12 @@ class ProfileScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () => Navigator.pushReplacementNamed(context, '/signin'),
+                  onPressed: () async {
+                    await AppState.clearUserInfo();
+                    if (context.mounted) {
+                      Navigator.pushReplacementNamed(context, '/signin');
+                    }
+                  },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.red,
                     side: const BorderSide(color: AppTheme.red),

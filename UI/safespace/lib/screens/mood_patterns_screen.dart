@@ -14,19 +14,39 @@ class MoodPatternsScreen extends StatefulWidget {
 
 class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
   late Future<List<Map<String, dynamic>>> _historyFuture;
+  late Future<List<MoodRecord>> _checkinHistoryFuture;
   int _selectedRangeDays = 7;
 
   @override
   void initState() {
     super.initState();
     _historyFuture = ApiService.getHistory();
+    _checkinHistoryFuture = _loadCheckinHistory();
+  }
+
+  Future<List<MoodRecord>> _loadCheckinHistory() async {
+    final data = await ApiService.getCheckinHistory();
+    if (data.isEmpty) {
+      return AppState.moodHistory;
+    }
+    return data
+        .where((item) => item['created_at'] != null)
+        .map((item) {
+          final date = DateTime.tryParse(item['created_at'].toString());
+          if (date == null) return null;
+          return MoodRecord(
+            date: date.toLocal(),
+            stress: (item['mood'] as num).toInt(),
+            energy: (item['energy'] as num).toDouble() / 10.0,
+            sleep: (item['sleep'] as num).toInt(),
+          );
+        })
+        .whereType<MoodRecord>()
+        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
-    final history = AppState.moodHistory;
-    final filteredHistory = _filterByRange(history, _selectedRangeDays);
-
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
       appBar: AppBar(
@@ -60,104 +80,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
             ),
             const SizedBox(height: 24),
-            _buildStreakCard(history),
-            const SizedBox(height: 20),
-
-            // Daily Check-in Graph
-            const Text(
-              'Daily Check-ins',
-              style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 12),
-            _buildRangeSelector(),
-            const SizedBox(height: 16),
-            _buildLegend(),
-            const SizedBox(height: 16),
-            
-            // Main Graph Container
-            Container(
-              height: 300,
-              padding: const EdgeInsets.fromLTRB(10, 24, 20, 10),
-              decoration: BoxDecoration(
-                color: AppTheme.bgCard,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (value) => FlLine(
-                      color: AppTheme.textDimmed.withOpacity(0.1),
-                      strokeWidth: 1,
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        interval: 1,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index >= 0 && index < filteredHistory.length) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Text(
-                                DateFormat('E').format(filteredHistory[index].date),
-                                style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
-                              ),
-                            );
-                          }
-                          return const Text('');
-                        },
-                      ),
-                    ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        interval: 1,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            value.toInt().toString(),
-                            style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  minX: 0,
-                    maxX: filteredHistory.isEmpty ? 1 : (filteredHistory.length - 1).toDouble(),
-                    minY: 0,
-                    maxY: 4.5,
-                    lineBarsData: filteredHistory.isEmpty ? [] : [
-                      // Stress Level (0-4)
-                      _lineData(
-                        filteredHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.stress.toDouble())).toList(),
-                        AppTheme.red,
-                      ),
-                      // Energy Level (0.0-1.0 mapped to 0-4)
-                      _lineData(
-                        filteredHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.energy * 4)).toList(),
-                        AppTheme.orange,
-                      ),
-                      // Sleep Quality (0-4)
-                      _lineData(
-                        filteredHistory.asMap().entries.map((e) => FlSpot(e.key.toDouble(), e.value.sleep.toDouble())).toList(),
-                        AppTheme.green,
-                      ),
-                    ],
-                  ),
-                ),
-            ),
-
-            const SizedBox(height: 32),
-            _buildInsights(filteredHistory),
+            _buildCheckinSection(),
             const SizedBox(height: 32),
 
             // Assessment History Graph
@@ -335,6 +258,140 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCheckinSection() {
+    return FutureBuilder<List<MoodRecord>>(
+      future: _checkinHistoryFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 300,
+            padding: const EdgeInsets.fromLTRB(10, 24, 20, 10),
+            decoration: BoxDecoration(
+              color: AppTheme.bgCard,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryPurple),
+            ),
+          );
+        }
+
+        final history = snapshot.data ?? [];
+        final filteredHistory = _filterByRange(history, _selectedRangeDays);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildStreakCard(history),
+            const SizedBox(height: 20),
+            const Text(
+              'Daily Check-ins',
+              style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            _buildRangeSelector(),
+            const SizedBox(height: 16),
+            _buildLegend(),
+            const SizedBox(height: 16),
+            Container(
+              height: 300,
+              padding: const EdgeInsets.fromLTRB(10, 24, 20, 10),
+              decoration: BoxDecoration(
+                color: AppTheme.bgCard,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: AppTheme.textDimmed.withOpacity(0.1),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          int index = value.toInt();
+                          if (index >= 0 && index < filteredHistory.length) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                DateFormat('E').format(filteredHistory[index].date),
+                                style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                              ),
+                            );
+                          }
+                          return const Text('');
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        interval: 1,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            value.toInt().toString(),
+                            style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  minX: 0,
+                  maxX: filteredHistory.isEmpty ? 1 : (filteredHistory.length - 1).toDouble(),
+                  minY: 0,
+                  maxY: 4.5,
+                  lineBarsData: filteredHistory.isEmpty
+                      ? []
+                      : [
+                          _lineData(
+                            filteredHistory
+                                .asMap()
+                                .entries
+                                .map((e) => FlSpot(e.key.toDouble(), e.value.stress.toDouble()))
+                                .toList(),
+                            AppTheme.red,
+                          ),
+                          _lineData(
+                            filteredHistory
+                                .asMap()
+                                .entries
+                                .map((e) => FlSpot(e.key.toDouble(), e.value.energy * 4))
+                                .toList(),
+                            AppTheme.orange,
+                          ),
+                          _lineData(
+                            filteredHistory
+                                .asMap()
+                                .entries
+                                .map((e) => FlSpot(e.key.toDouble(), e.value.sleep.toDouble()))
+                                .toList(),
+                            AppTheme.green,
+                          ),
+                        ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            _buildInsights(filteredHistory),
+          ],
         );
       },
     );

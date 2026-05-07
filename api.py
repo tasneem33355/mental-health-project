@@ -1,9 +1,11 @@
 import os
 from datetime import datetime
 import hashlib
+import logging
+import time
 
 import httpx
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -13,16 +15,19 @@ from core_ai import predict_text, predict_survey, fuse_scores
 from recommendations import get_recommendations
 
 # --- DATABASE SETUP ---
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, JSON
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, JSON, Text, Boolean, Index
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-engine = create_engine(DATABASE_URL, connect_args={'connect_timeout': 5}) if DATABASE_URL else None
+engine = create_engine(DATABASE_URL, connect_args={'connect_timeout': 5}, pool_pre_ping=True) if DATABASE_URL else None
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine) if engine else None
 Base = declarative_base()
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("safespace.api")
 
 
 class DBUser(Base):
@@ -41,6 +46,20 @@ class DBAnalysis(Base):
     primary_condition = Column(String)
     clinical_scoring = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
+    text_input = Column(Text, nullable=True)
+    text_input_hash = Column(Text, nullable=True)
+    text_scores = Column(JSON, nullable=True)
+    survey_scores = Column(JSON, nullable=True)
+    fused_scores = Column(JSON, nullable=True)
+    severity = Column(Text, nullable=True)
+    cause = Column(Text, nullable=True)
+    suicidal_flag = Column(Boolean, default=False)
+    model_version = Column(Text, nullable=True)
+    app_version = Column(Text, nullable=True)
+    locale = Column(Text, nullable=True)
+
+
+Index("ix_analyses_user_id_created_at", DBAnalysis.user_id, DBAnalysis.created_at)
 
 
 class DBCheckin(Base):
@@ -52,8 +71,26 @@ class DBCheckin(Base):
     energy = Column(Float, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+Index("ix_checkins_user_id_created_at", DBCheckin.user_id, DBCheckin.created_at)
+
 # --- APP SETUP ---
 app = FastAPI(title="SafeSpace API", version="1.0.0")
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    duration_ms = int((time.time() - start_time) * 1000)
+    logger.info(
+        "%s %s %s %sms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
 
 
 @app.on_event("startup")
@@ -65,12 +102,12 @@ async def startup_event():
                 asyncio.to_thread(Base.metadata.create_all, bind=engine),
                 timeout=8.0
             )
-            print("Database connected and tables verified.")
+            logger.info("Database connected and tables verified.")
         except asyncio.TimeoutError:
-            print("Database connection timed out during startup - server will start without DB verification.")
+            logger.warning("Database connection timed out during startup - server will start without DB verification.")
         except Exception as e:
-            print(f"Database connection failed during startup: {e}")
-    print("Application startup complete.")
+            logger.exception("Database connection failed during startup: %s", e)
+    logger.info("Application startup complete.")
 
 
 def get_db():
@@ -132,6 +169,10 @@ class AnalyzeRequest(BaseModel):
     text: str = Field(..., description="The user's response in text (Arabic/English)")
     survey_answers: list[int] = Field(..., min_items=42, max_items=42, description="List of 42 integers (0-4) representing DASS-42 survey answers")
     user_id: int | None = Field(default=None, description="Optional user ID to link analysis to a user")
+    locale: str = Field(default="en")
+    client_ts: str | None = None
+    app_version: str | None = None
+    model_version: str | None = None
 
 
 class ChatRequest(BaseModel):
@@ -244,19 +285,39 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
     primary = max(final_scores, key=final_scores.get)
     clinical = calculate_dass_clinical_score(payload.survey_answers)
     rec = get_recommendations(primary, final_scores[primary], payload.text)
-    created_at = datetime.utcnow().isoformat() + "Z"
+    created_at_dt = datetime.utcnow()
+    if payload.client_ts:
+        try:
+            created_at_dt = datetime.fromisoformat(payload.client_ts.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            pass
+    created_at = created_at_dt.isoformat() + "Z"
 
     # Save to PostgreSQL if DB is connected
     if db:
         try:
+            text_input_hash = hashlib.sha256(payload.text.encode()).hexdigest()
             new_analysis = DBAnalysis(
+                user_id=payload.user_id,
                 primary_condition=primary,
-                clinical_scoring=clinical
+                clinical_scoring=clinical,
+                created_at=created_at_dt,
+                text_input=payload.text,
+                text_input_hash=text_input_hash,
+                text_scores=text_scores,
+                survey_scores=survey_scores,
+                fused_scores=final_scores,
+                severity=rec.get("severity"),
+                cause=rec.get("cause"),
+                suicidal_flag=rec.get("suicidal_flag", False),
+                model_version=None,
+                app_version=None,
+                locale=payload.locale,
             )
             db.add(new_analysis)
             db.commit()
         except Exception as e:
-            print(f"DB save error: {e}")
+            logger.exception("DB save error: %s", e)
 
     return {
         "analysis_id": None,
@@ -283,6 +344,7 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
 @app.post("/api/v1/analyze")
 async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(get_db)):
     try:
+        start_time = time.time()
         # Shift 0-3 UI scale to 1-4 for the AI model (trained on data.csv)
         shifted_answers = [a + 1 for a in request.survey_answers]
         text_scores = predict_text(request.text)
@@ -292,20 +354,39 @@ async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(g
         primary = max(final_scores, key=final_scores.get)
         clinical = calculate_dass_clinical_score(request.survey_answers)
         rec = get_recommendations(primary, final_scores[primary], request.text)
-        created_at = datetime.utcnow().isoformat() + "Z"
+        created_at_dt = datetime.utcnow()
+        if request.client_ts:
+            try:
+                created_at_dt = datetime.fromisoformat(request.client_ts.replace("Z", "+00:00")).replace(tzinfo=None)
+            except ValueError:
+                pass
+        created_at = created_at_dt.isoformat() + "Z"
 
         # Save to PostgreSQL if DB is connected
         if db:
             try:
+                text_input_hash = hashlib.sha256(request.text.encode()).hexdigest()
                 new_analysis = DBAnalysis(
                     user_id=request.user_id,
                     primary_condition=primary,
-                    clinical_scoring=clinical
+                    clinical_scoring=clinical,
+                    created_at=created_at_dt,
+                    text_input=request.text,
+                    text_input_hash=text_input_hash,
+                    text_scores=text_scores,
+                    survey_scores=survey_scores,
+                    fused_scores=final_scores,
+                    severity=rec.get("severity"),
+                    cause=rec.get("cause"),
+                    suicidal_flag=rec.get("suicidal_flag", False),
+                    model_version=request.model_version,
+                    app_version=request.app_version,
+                    locale=request.locale,
                 )
                 db.add(new_analysis)
                 db.commit()
             except Exception as e:
-                print(f"DB save error: {e}")
+                logger.exception("DB save error: %s", e)
 
         return {
             "analysis_id": None,
@@ -326,9 +407,11 @@ async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(g
             },
             "suicidal_flag": rec.get("suicidal_flag", False),
             "created_at": created_at,
+            "duration_ms": int((time.time() - start_time) * 1000),
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Analyze request failed: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to analyze")
 
 # Flutter-compatible history endpoint
 @app.get("/api/v1/analyses/history")
@@ -359,7 +442,8 @@ async def get_analyses_history(user_id: int = None, db: Session = Depends(get_db
                 })
         return history
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Analyze request failed: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to analyze")
 
 @app.post("/api/v1/chat", response_model=ChatResponse)
 async def chat_with_ai(request: ChatRequest):
@@ -421,7 +505,8 @@ async def create_checkin(request: CheckinRequest, db: Session = Depends(get_db))
         }
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to save check-in: {str(e)}")
+        logger.exception("Failed to save check-in: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to save check-in")
 
 
 @app.get("/api/v1/checkin/history")
@@ -447,4 +532,5 @@ async def get_checkin_history(user_id: int | None = None, db: Session = Depends(
             for r in records
         ]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.exception("Failed to fetch check-in history: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to fetch history")
