@@ -22,7 +22,6 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
     'Applied to me to some degree',
     'Applied to me to a considerable degree',
     'Applied to me very much',
-    'Applied to me almost all the time',
   ];
 
   void _onOptionSelected(int value) {

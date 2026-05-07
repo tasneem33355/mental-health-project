@@ -235,8 +235,11 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 # New-style endpoint (used by index.html test page)
 @app.post("/v1/analysis")
 def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
+    # Shift 0-3 UI scale to 1-4 for the AI model (trained on data.csv)
+    shifted_answers = [a + 1 for a in payload.survey_answers]
     text_scores = predict_text(payload.text)
-    survey_scores = predict_survey(payload.survey_answers)
+    survey_scores = predict_survey(shifted_answers)
+    
     final_scores = fuse_scores(text_scores, survey_scores)
     primary = max(final_scores, key=final_scores.get)
     clinical = calculate_dass_clinical_score(payload.survey_answers)
@@ -280,8 +283,11 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
 @app.post("/api/v1/analyze")
 async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(get_db)):
     try:
+        # Shift 0-3 UI scale to 1-4 for the AI model (trained on data.csv)
+        shifted_answers = [a + 1 for a in request.survey_answers]
         text_scores = predict_text(request.text)
-        survey_scores = predict_survey(request.survey_answers)
+        survey_scores = predict_survey(shifted_answers)
+        
         final_scores = fuse_scores(text_scores, survey_scores)
         primary = max(final_scores, key=final_scores.get)
         clinical = calculate_dass_clinical_score(request.survey_answers)

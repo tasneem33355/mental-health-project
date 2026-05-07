@@ -376,7 +376,7 @@ for i in range(0, len(SURVEY_Q), 2):
         with cols[j]:
             val = st.slider(
                 f"{i+j+1}. {en}\n{ar}",
-                min_value=0, max_value=4, value=0,
+                min_value=0, max_value=3, value=0,
                 key=f"q_{i+j}",
             )
             survey_answers.append(val)
