@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
@@ -12,6 +12,7 @@ class AppState {
   static DateTime? lastCheckInDate;
   static List<MoodRecord> moodHistory = [];
   static List<Goal> goals = [];
+  static List<JournalEntry> journalEntries = [];
 
   // --- Persistence Keys ---
   static String get _keyMoodHistory => 'mood_history_$userId';
@@ -73,6 +74,8 @@ class AppState {
     } else {
       goals = [];
     }
+
+    // Journal entries are loaded from API on demand
   }
 
   // --- Save helpers ---
@@ -87,6 +90,7 @@ class AppState {
     final jsonList = goals.map((g) => jsonEncode(g.toJson())).toList();
     await prefs.setStringList(_keyGoals, jsonList);
   }
+
 
   static Future<void> saveUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
@@ -112,6 +116,7 @@ class AppState {
     lastCheckInDate = null;
     moodHistory = [];
     goals = [];
+    journalEntries = [];
   }
 
   static bool get isLoggedIn => userId != null && userEmail != null;
@@ -162,6 +167,41 @@ class AppState {
 
   static Future<void> updateGoals() async {
     await _saveGoals();
+  }
+
+  static Future<void> addJournalEntry(String content) async {
+    final trimmed = content.trim();
+    if (trimmed.isEmpty) return;
+
+    await ApiService.createJournalEntry(
+      content: trimmed,
+      clientTs: DateTime.now().toUtc().toIso8601String(),
+    );
+  }
+
+  static Future<void> refreshJournalEntries() async {
+    final data = await ApiService.getJournalHistory();
+    journalEntries = data
+        .where((item) => item['created_at'] != null)
+        .map((item) {
+          final date = DateTime.tryParse(item['created_at'].toString());
+          if (date == null) return null;
+          final content = (item['content'] ?? '').toString();
+          final lines = content.split('\n');
+          final title = lines.isNotEmpty && lines.first.trim().isNotEmpty
+              ? lines.first.trim()
+              : 'Journal Entry';
+          final preview = content.length > 120 ? '${content.substring(0, 120)}...' : content;
+          return JournalEntry(
+            id: (item['id'] as num?)?.toInt(),
+            date: date.toLocal(),
+            title: title,
+            preview: preview,
+            content: content,
+          );
+        })
+        .whereType<JournalEntry>()
+        .toList();
   }
 
   static String getMoodStatus() {
@@ -222,5 +262,29 @@ class Goal {
     title: json['title'],
     deadline: json['deadline'] != null ? DateTime.parse(json['deadline']) : null,
     isDone: json['isDone'] ?? false,
+  );
+}
+
+class JournalEntry {
+  final int? id;
+  final DateTime date;
+  final String title;
+  final String preview;
+  final String content;
+
+  JournalEntry({
+    this.id,
+    required this.date,
+    required this.title,
+    required this.preview,
+    required this.content,
+  });
+
+  factory JournalEntry.fromJson(Map<String, dynamic> json) => JournalEntry(
+    id: json['id'] as int?,
+    date: DateTime.parse(json['date']),
+    title: json['title'],
+    preview: json['preview'],
+    content: json['content'],
   );
 }

@@ -74,6 +74,15 @@ class DBCheckin(Base):
 
 Index("ix_checkins_user_id_created_at", DBCheckin.user_id, DBCheckin.created_at)
 
+
+class DBJournalEntry(Base):
+    __tablename__ = "journal_entries"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True, nullable=True)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=True)
+
 # --- APP SETUP ---
 app = FastAPI(title="SafeSpace API", version="1.0.0")
 
@@ -201,6 +210,16 @@ class CheckinRequest(BaseModel):
     energy: float = Field(..., ge=0, le=10)
     user_id: int | None = Field(default=None, description="Optional user ID to link check-in to a user")
     client_ts: str | None = None
+
+
+class JournalEntryRequest(BaseModel):
+    content: str = Field(..., min_length=1)
+    user_id: int | None = Field(default=None, description="Optional user ID to link journal entry to a user")
+    client_ts: str | None = None
+
+
+class JournalEntryUpdateRequest(BaseModel):
+    content: str = Field(..., min_length=1)
 
 
 # --- ENDPOINTS ---
@@ -534,3 +553,117 @@ async def get_checkin_history(user_id: int | None = None, db: Session = Depends(
     except Exception as e:
         logger.exception("Failed to fetch check-in history: %s", e)
         raise HTTPException(status_code=500, detail="Failed to fetch history")
+
+
+@app.post("/api/v1/journal")
+async def create_journal_entry(request: JournalEntryRequest, db: Session = Depends(get_db)):
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    if request.user_id is None:
+        raise HTTPException(status_code=400, detail="user_id is required")
+
+    created_at = datetime.utcnow()
+    if request.client_ts:
+        try:
+            created_at = datetime.fromisoformat(request.client_ts.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            pass
+
+    try:
+        entry = DBJournalEntry(
+            user_id=request.user_id,
+            content=request.content,
+            created_at=created_at,
+        )
+        db.add(entry)
+        db.commit()
+        db.refresh(entry)
+
+        return {
+            "id": entry.id,
+            "user_id": entry.user_id,
+            "content": entry.content,
+            "created_at": entry.created_at.isoformat() + "Z",
+        }
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to save journal entry: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to save journal entry")
+
+
+@app.get("/api/v1/journal/history")
+async def get_journal_history(user_id: int | None = None, db: Session = Depends(get_db)):
+    try:
+        if not db:
+            return []
+
+        query = db.query(DBJournalEntry)
+        if user_id is not None:
+            query = query.filter(DBJournalEntry.user_id == user_id)
+
+        records = query.order_by(DBJournalEntry.created_at.desc()).limit(50).all()
+        return [
+            {
+                "id": r.id,
+                "user_id": r.user_id,
+                "content": r.content,
+                "created_at": r.created_at.isoformat() + "Z",
+            }
+            for r in records
+        ]
+    except Exception as e:
+        logger.exception("Failed to fetch journal history: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to fetch journal history")
+
+
+@app.put("/api/v1/journal/{entry_id}")
+async def update_journal_entry(entry_id: int, request: JournalEntryUpdateRequest, db: Session = Depends(get_db)):
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    try:
+        entry = db.query(DBJournalEntry).filter(DBJournalEntry.id == entry_id).first()
+        if not entry:
+            raise HTTPException(status_code=404, detail="Journal entry not found")
+
+        entry.content = request.content
+        entry.updated_at = datetime.utcnow()
+        db.add(entry)
+        db.commit()
+        db.refresh(entry)
+
+        return {
+            "id": entry.id,
+            "user_id": entry.user_id,
+            "content": entry.content,
+            "created_at": entry.created_at.isoformat() + "Z",
+            "updated_at": entry.updated_at.isoformat() + "Z",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to update journal entry: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to update journal entry")
+
+
+@app.delete("/api/v1/journal/{entry_id}")
+async def delete_journal_entry(entry_id: int, db: Session = Depends(get_db)):
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    try:
+        entry = db.query(DBJournalEntry).filter(DBJournalEntry.id == entry_id).first()
+        if not entry:
+            raise HTTPException(status_code=404, detail="Journal entry not found")
+
+        db.delete(entry)
+        db.commit()
+        return {"status": "deleted", "id": entry_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.exception("Failed to delete journal entry: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to delete journal entry")

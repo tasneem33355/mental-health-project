@@ -173,4 +173,83 @@ class ApiService {
       return [];
     }
   }
+
+  // --- JOURNAL ---
+
+  static Future<Map<String, dynamic>> createJournalEntry({
+    required String content,
+    String? clientTs,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/journal'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "content": content,
+          "user_id": AppState.userId,
+          if (clientTs != null) "client_ts": clientTs,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed to save journal: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Journal API Error: $e");
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getJournalHistory() async {
+    try {
+      String url = '$baseUrl/journal/history';
+      if (AppState.userId != null) {
+        url += '?user_id=${AppState.userId}';
+      }
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<Map<String, dynamic>> updateJournalEntry({
+    required int entryId,
+    required String content,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/journal/$entryId'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"content": content}),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed to update journal: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Journal API Error: $e");
+    }
+  }
+
+  static Future<void> deleteJournalEntry({
+    required int entryId,
+  }) async {
+    try {
+      final response = await http.delete(Uri.parse('$baseUrl/journal/$entryId'));
+      if (response.statusCode != 200) {
+        throw Exception("Failed to delete journal: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Journal API Error: $e");
+    }
+  }
 }

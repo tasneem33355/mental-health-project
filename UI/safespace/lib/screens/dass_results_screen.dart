@@ -499,71 +499,74 @@ class DassResultsScreen extends StatelessWidget {
     final stressPct = total == 0 ? 0 : (stress / total) * 100;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Score Breakdown',
-            style: TextStyle(
-                color: AppTheme.textWhite,
-                fontSize: 18,
-                fontWeight: FontWeight.bold),
+            style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 180,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 4,
-                centerSpaceRadius: 45,
-                sections: [
-                  PieChartSectionData(
-                    color: AppTheme.accentPurple,
-                    value: depressionPct,
-                    title: '${depressionPct.toStringAsFixed(0)}%',
-                    radius: 50,
-                    titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  PieChartSectionData(
-                    color: AppTheme.orange,
-                    value: anxietyPct,
-                    title: '${anxietyPct.toStringAsFixed(0)}%',
-                    radius: 50,
-                    titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  PieChartSectionData(
-                    color: AppTheme.green,
-                    value: stressPct,
-                    title: '${stressPct.toStringAsFixed(0)}%',
-                    radius: 50,
-                    titleStyle: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _pieLegend('Depression', AppTheme.accentPurple),
-              _pieLegend('Anxiety', AppTheme.orange),
-              _pieLegend('Stress', AppTheme.green),
+              // Large Pie Chart
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 260,
+                  child: PieChart(
+                    PieChartData(
+                      sectionsSpace: 4,
+                      centerSpaceRadius: 55,
+                      sections: [
+                        PieChartSectionData(
+                          color: AppTheme.accentPurple,
+                          value: depressionPct.toDouble(),
+                          title: '${depressionPct.toStringAsFixed(0)}%',
+                          radius: 65,
+                          titleStyle: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                        PieChartSectionData(
+                          color: AppTheme.orange,
+                          value: anxietyPct.toDouble(),
+                          title: '${anxietyPct.toStringAsFixed(0)}%',
+                          radius: 65,
+                          titleStyle: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                        PieChartSectionData(
+                          color: AppTheme.green,
+                          value: stressPct.toDouble(),
+                          title: '${stressPct.toStringAsFixed(0)}%',
+                          radius: 65,
+                          titleStyle: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Vertical Legend
+              Expanded(
+                flex: 2,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _pieLegend('Depression', AppTheme.accentPurple),
+                    const SizedBox(height: 16),
+                    _pieLegend('Anxiety', AppTheme.orange),
+                    const SizedBox(height: 16),
+                    _pieLegend('Stress', AppTheme.green),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
