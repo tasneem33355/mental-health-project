@@ -42,6 +42,16 @@ class DBAnalysis(Base):
     clinical_scoring = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
+class DBCheckin(Base):
+    __tablename__ = "checkins"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True, nullable=False)
+    mood = Column(Integer, nullable=False)
+    sleep = Column(Integer, nullable=False)
+    energy = Column(Float, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 # --- APP SETUP ---
 app = FastAPI(title="SafeSpace API", version="1.0.0")
 
@@ -142,6 +152,14 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str = Field(..., min_length=5)
     password: str = Field(..., min_length=1)
+
+
+class CheckinRequest(BaseModel):
+    mood: int = Field(..., ge=0, le=10)
+    sleep: int = Field(..., ge=0, le=10)
+    energy: float = Field(..., ge=0, le=10)
+    user_id: int | None = Field(default=None, description="Optional user ID to link check-in to a user")
+    client_ts: str | None = None
 
 
 # --- ENDPOINTS ---
@@ -358,3 +376,69 @@ async def chat_with_ai(request: ChatRequest):
             return ChatResponse(reply=data.get("text") or data.get("answer") or str(data))
         except Exception as e:
             raise HTTPException(status_code=502, detail=f"Failed to communicate with AI API: {str(e)}")
+
+
+@app.post("/api/v1/checkin")
+async def create_checkin(request: CheckinRequest, db: Session = Depends(get_db)):
+    if not db:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    if request.user_id is None:
+        raise HTTPException(status_code=400, detail="user_id is required")
+
+    created_at = datetime.utcnow()
+    if request.client_ts:
+        try:
+            created_at = datetime.fromisoformat(request.client_ts.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            pass
+
+    try:
+        new_checkin = DBCheckin(
+            user_id=request.user_id,
+            mood=request.mood,
+            sleep=request.sleep,
+            energy=request.energy,
+            created_at=created_at,
+        )
+        db.add(new_checkin)
+        db.commit()
+        db.refresh(new_checkin)
+
+        return {
+            "id": new_checkin.id,
+            "user_id": new_checkin.user_id,
+            "mood": new_checkin.mood,
+            "sleep": new_checkin.sleep,
+            "energy": new_checkin.energy,
+            "created_at": new_checkin.created_at.isoformat() + "Z",
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to save check-in: {str(e)}")
+
+
+@app.get("/api/v1/checkin/history")
+async def get_checkin_history(user_id: int | None = None, db: Session = Depends(get_db)):
+    try:
+        if not db:
+            return []
+
+        query = db.query(DBCheckin)
+        if user_id is not None:
+            query = query.filter(DBCheckin.user_id == user_id)
+
+        records = query.order_by(DBCheckin.created_at.desc()).limit(30).all()
+        return [
+            {
+                "id": r.id,
+                "user_id": r.user_id,
+                "mood": r.mood,
+                "sleep": r.sleep,
+                "energy": r.energy,
+                "created_at": r.created_at.isoformat() + "Z",
+            }
+            for r in records
+        ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

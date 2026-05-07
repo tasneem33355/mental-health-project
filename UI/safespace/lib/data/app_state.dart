@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/api_service.dart';
 
 class AppState {
   static Map<String, int>? lastDassResults;
@@ -134,6 +135,19 @@ class AppState {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyLastCheckIn, lastCheckInDate!.toIso8601String());
     await _saveMoodHistory();
+
+    if (userId != null) {
+      try {
+        await ApiService.createCheckin(
+          mood: stress,
+          sleep: sleep,
+          energy: energy,
+          clientTs: lastCheckInDate!.toUtc().toIso8601String(),
+        );
+      } catch (_) {
+        // Ignore network failures; local state is already saved.
+      }
+    }
   }
 
   static Future<void> addGoal(String title, DateTime? deadline) async {

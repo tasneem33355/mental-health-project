@@ -124,4 +124,53 @@ class ApiService {
       return [];
     }
   }
+
+  // --- CHECKINS ---
+
+  static Future<Map<String, dynamic>> createCheckin({
+    required int mood,
+    required int sleep,
+    required double energy,
+    String? clientTs,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/checkin'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "mood": mood,
+          "sleep": sleep,
+          "energy": energy,
+          "user_id": AppState.userId,
+          if (clientTs != null) "client_ts": clientTs,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        throw Exception("Failed to save check-in: ${response.statusCode}");
+      }
+    } catch (e) {
+      throw Exception("Check-in API Error: $e");
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getCheckinHistory() async {
+    try {
+      String url = '$baseUrl/checkin/history';
+      if (AppState.userId != null) {
+        url += '?user_id=${AppState.userId}';
+      }
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
 }
