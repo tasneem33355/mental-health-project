@@ -30,3 +30,7 @@ UI/safespace/linux/
 # System/Logs
 *.log
 .DS_Store
+
+# Files with secrets
+push_to_space.py
+scrub_rules.txt
