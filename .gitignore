@@ -1,19 +1,32 @@
-push_to_space.py
-temp_space/
-temp_hf_space/
-scrub_rules.txt
-.ipynb_checkpoints/
-*.ipynb
-repo.zip
-data.csv
-*.h5
-*.pkl
-mental_xlmr_final/
+# Flutter build artifacts
 UI/safespace/build/
 UI/safespace/.dart_tool/
 UI/safespace/.pub-cache/
 UI/safespace/.flutter-plugins
 UI/safespace/.flutter-plugins-dependencies
 UI/safespace/node_modules/
+
+# Non-web platforms (not needed for Space deployment)
+UI/safespace/android/
+UI/safespace/ios/
+UI/safespace/macos/
+UI/safespace/windows/
+UI/safespace/linux/
+
+# Large data/archives
+*.zip
+*.csv
+*.pkl
+*.h5
+*.bin
+*.pt
+*.safetensors
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# System/Logs
 *.log
 .DS_Store

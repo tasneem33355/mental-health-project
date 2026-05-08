@@ -1,0 +1,51 @@
+class DassQuestion {
+  final String id;
+  final String text;
+
+  const DassQuestion({required this.id, required this.text});
+}
+
+const List<DassQuestion> dassQuestions = [
+  DassQuestion(id: 'Q1', text: 'I found myself getting upset by quite trivial things.'),
+  DassQuestion(id: 'Q2', text: 'I was aware of dryness of my mouth.'),
+  DassQuestion(id: 'Q3', text: 'I couldn\'t seem to experience any positive feeling at all.'),
+  DassQuestion(id: 'Q4', text: 'I experienced breathing difficulty (eg, excessively rapid breathing, breathlessness in the absence of physical exertion).'),
+  DassQuestion(id: 'Q5', text: 'I just couldn\'t seem to get going.'),
+  DassQuestion(id: 'Q6', text: 'I tended to over-react to situations.'),
+  DassQuestion(id: 'Q7', text: 'I had a feeling of shakiness (eg, legs going to give way).'),
+  DassQuestion(id: 'Q8', text: 'I found it difficult to relax.'),
+  DassQuestion(id: 'Q9', text: 'I found myself in situations that made me so anxious I was most relieved when they ended.'),
+  DassQuestion(id: 'Q10', text: 'I felt that I had nothing to look forward to.'),
+  DassQuestion(id: 'Q11', text: 'I found myself getting upset rather easily.'),
+  DassQuestion(id: 'Q12', text: 'I felt that I was using a lot of nervous energy.'),
+  DassQuestion(id: 'Q13', text: 'I felt sad and depressed.'),
+  DassQuestion(id: 'Q14', text: 'I found myself getting impatient when I was delayed in any way (eg, elevators, traffic lights, being kept waiting).'),
+  DassQuestion(id: 'Q15', text: 'I had a feeling of faintness.'),
+  DassQuestion(id: 'Q16', text: 'I felt that I had lost interest in just about everything.'),
+  DassQuestion(id: 'Q17', text: 'I felt I wasn\'t worth much as a person.'),
+  DassQuestion(id: 'Q18', text: 'I felt that I was rather touchy.'),
+  DassQuestion(id: 'Q19', text: 'I perspired noticeably (eg, hands sweaty) in the absence of high temperatures or physical exertion.'),
+  DassQuestion(id: 'Q20', text: 'I felt scared without any good reason.'),
+  DassQuestion(id: 'Q21', text: 'I felt that life wasn\'t worthwhile.'),
+  DassQuestion(id: 'Q22', text: 'I found it hard to wind down.'),
+  DassQuestion(id: 'Q23', text: 'I had difficulty in swallowing.'),
+  DassQuestion(id: 'Q24', text: 'I couldn\'t seem to get any enjoyment out of the things I did.'),
+  DassQuestion(id: 'Q25', text: 'I was aware of the action of my heart in the absence of physical exertion (eg, sense of heart rate increase, heart missing a beat).'),
+  DassQuestion(id: 'Q26', text: 'I felt down-hearted and blue.'),
+  DassQuestion(id: 'Q27', text: 'I found that I was very irritable.'),
+  DassQuestion(id: 'Q28', text: 'I felt I was close to panic.'),
+  DassQuestion(id: 'Q29', text: 'I found it hard to calm down after something upset me.'),
+  DassQuestion(id: 'Q30', text: 'I feared that I would be "thrown" by some trivial but unfamiliar task.'),
+  DassQuestion(id: 'Q31', text: 'I was unable to become enthusiastic about anything.'),
+  DassQuestion(id: 'Q32', text: 'I found it difficult to tolerate interruptions to what I was doing.'),
+  DassQuestion(id: 'Q33', text: 'I was in a state of nervous tension.'),
+  DassQuestion(id: 'Q34', text: 'I felt I was pretty worthless.'),
+  DassQuestion(id: 'Q35', text: 'I was intolerant of anything that kept me from getting on with what I was doing.'),
+  DassQuestion(id: 'Q36', text: 'I felt terrified.'),
+  DassQuestion(id: 'Q37', text: 'I could see nothing in the future to be hopeful about.'),
+  DassQuestion(id: 'Q38', text: 'I felt that life was meaningless.'),
+  DassQuestion(id: 'Q39', text: 'I found myself getting agitated.'),
+  DassQuestion(id: 'Q40', text: 'I was worried about situations in which I might panic and make a fool of myself.'),
+  DassQuestion(id: 'Q41', text: 'I experienced trembling (eg, in the hands).'),
+  DassQuestion(id: 'Q42', text: 'I found it difficult to work up the initiative to do things.'),
+];
