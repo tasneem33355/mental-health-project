@@ -17,6 +17,7 @@ import 'screens/wellness_screen.dart';
 import 'screens/bubble_pop_screen.dart';
 import 'screens/color_match_screen.dart';
 import 'screens/assessment_screen.dart';
+import 'screens/assessment_intro_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +50,8 @@ class SafespaceApp extends StatelessWidget {
         '/mood-patterns': (ctx) => const MoodPatternsScreen(),
         '/mood-questionnaire': (ctx) => const MoodQuestionnaireScreen(),
         '/adhd-exercise': (ctx) => const AdhdExerciseScreen(),
-        '/assessment': (ctx) => const AssessmentScreen(),
+        '/assessment': (ctx) => const AssessmentIntroScreen(),
+        '/assessment-start': (ctx) => const AssessmentScreen(),
         '/profile': (ctx) => const ProfileScreen(),
         '/morning-ritual': (ctx) => const RecommendationScreen(timeOfDay: 'Morning'),
         '/nightly-unwind': (ctx) => const RecommendationScreen(timeOfDay: 'Evening'),
