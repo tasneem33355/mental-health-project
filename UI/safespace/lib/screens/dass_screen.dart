@@ -136,9 +136,9 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
           icon: const Icon(Icons.close, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
+        title: const Column(
           children: [
-            const Text(
+            Text(
               'Self Assessment',
               style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w600),
             ),

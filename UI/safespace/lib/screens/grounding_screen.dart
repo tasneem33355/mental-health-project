@@ -241,9 +241,46 @@ class _GroundingScreenState extends State<GroundingScreen> {
   Widget _buildAddOwnChip() {
     return GestureDetector(
       onTap: () {
-        // Just a mock for now, adding a random item or just showing the functionality
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Custom input coming soon! Tap existing chips for now.'), duration: Duration(seconds: 1)),
+        showDialog(
+          context: context,
+          builder: (context) {
+            final TextEditingController customController = TextEditingController();
+            return AlertDialog(
+              backgroundColor: AppTheme.bgCard,
+              title: const Text('Add your own', style: TextStyle(color: AppTheme.textWhite)),
+              content: TextField(
+                controller: customController,
+                style: const TextStyle(color: AppTheme.textWhite),
+                decoration: InputDecoration(
+                  hintText: 'Enter custom item',
+                  hintStyle: const TextStyle(color: AppTheme.textDimmed),
+                  filled: true,
+                  fillColor: AppTheme.bgDark,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    final text = customController.text.trim();
+                    if (text.isNotEmpty) {
+                      setState(() {
+                        final step = _stepData[_currentStep]!;
+                        (step['options'] as List<String>).add(text);
+                        _onChipTapped(text);
+                      });
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryPurple),
+                  child: const Text('Add'),
+                ),
+              ],
+            );
+          },
         );
       },
       child: Container(

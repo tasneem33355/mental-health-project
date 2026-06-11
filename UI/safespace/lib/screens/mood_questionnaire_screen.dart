@@ -11,14 +11,14 @@ class MoodQuestionnaireScreen extends StatefulWidget {
 }
 
 class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
-  int _step = 0;
+  final int _step = 0;
   int? _stressLevel; // 0=Calm .. 4=Very stressed
-  double _energyLevel = 0.7;
+  double? _energyLevel;
   int? _sleepQuality; // 0=Poor..4=Amazing
 
-  final List<String> _stressEmojis = ['😌', '🙂', '😐', '😣', '😰'];
-  final List<String> _stressLabels = ['Calm', 'Light', 'Neutral', 'Tense', 'Very stressed'];
-  final List<String> _sleepOptions = ['Poor', 'Okay', 'Good', 'Great', 'Amazing'];
+  final List<String> _stressEmojis = ['😰', '😣', '😐', '🙂', '😌'];
+  final List<String> _stressLabels = ['Very stressed', 'Tense', 'Neutral', 'Light', 'Calm'];
+  final List<String> _sleepOptions = ['<4h', '4-5h', '5-6h', '6-7h', '8h+'];
 
   final List<Color> _sleepColors = [
     AppTheme.red,
@@ -95,15 +95,15 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_stressLevel == null || _sleepQuality == null) {
+                    if (_stressLevel == null || _energyLevel == null || _sleepQuality == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Please answer all questions')),
                       );
                       return;
                     }
                     AppState.addMoodRecord(
-                      _stressLevel!,
-                      _energyLevel,
+                      4 - _stressLevel!, // Invert back so 0=Calm, 4=Very Stressed for backend
+                      _energyLevel!,
                       _sleepQuality!,
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -123,95 +123,124 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
 
   Widget _buildStressCard() {
     final result = _stressLevel != null
-        ? (_stressLevel! < 2 ? 'You feel calm 😌' : 'You feel a little tense today.')
+        ? (_stressLevel! > 2 ? 'You feel calm 😌' : 'You feel a little tense today.')
         : null;
-    final badge = _stressLevel != null && _stressLevel! >= 3
+    final badge = _stressLevel != null && _stressLevel! <= 1
         ? 'High'
         : null;
 
     return _QuestionCard(
       question: 'Question 1 of 3',
       text: 'How stressed do you feel right now?',
+      icon: Icons.favorite_border,
       result: result,
       badge: badge,
       badgeColor: AppTheme.orange,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(_stressEmojis.length, (i) {
-          final selected = _stressLevel == i;
-          return GestureDetector(
-            onTap: () => setState(() => _stressLevel = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: selected
-                    ? AppTheme.primaryPurple.withOpacity(0.3)
-                    : Colors.transparent,
-                shape: BoxShape.circle,
-                border: selected
-                    ? Border.all(color: AppTheme.primaryPurple)
-                    : null,
-              ),
-              child: Column(
-                children: [
-                  Text(_stressEmojis[i],
-                      style: TextStyle(fontSize: selected ? 28 : 22)),
-                  const SizedBox(height: 4),
-                  Text(
-                    _stressLabels[i],
-                    style: TextStyle(
-                      color: selected ? AppTheme.textWhite : AppTheme.textDimmed,
-                      fontSize: 9,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: [Colors.blue.withOpacity(0.4), Colors.red.withOpacity(0.4)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(_stressEmojis.length, (i) {
+            final selected = _stressLevel == i;
+            return GestureDetector(
+              onTap: () => setState(() => _stressLevel = i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppTheme.primaryPurple.withOpacity(0.5)
+                      : Colors.transparent,
+                  shape: BoxShape.circle,
+                  border: selected
+                      ? Border.all(color: AppTheme.primaryPurple)
+                      : null,
+                ),
+                child: Column(
+                  children: [
+                    Text(_stressEmojis[i],
+                        style: TextStyle(fontSize: selected ? 28 : 22)),
+                    const SizedBox(height: 4),
+                    Text(
+                      _stressLabels[i],
+                      style: TextStyle(
+                        color: selected ? AppTheme.textWhite : AppTheme.textWhite.withOpacity(0.6),
+                        fontSize: 9,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }
 
   Widget _buildEnergyCard() {
-    String result;
-    Color resultColor;
-    if (_energyLevel < 0.3) {
-      result = 'Your energy feels very low';
-      resultColor = AppTheme.red;
-    } else if (_energyLevel < 0.6) {
-      result = 'Your energy feels moderate';
-      resultColor = AppTheme.orange;
-    } else {
-      result = 'Your energy feels steady and positive.';
-      resultColor = AppTheme.green;
+    String? result;
+    Color? resultColor;
+    String? badge;
+    Color? badgeColor;
+    
+    if (_energyLevel != null) {
+      if (_energyLevel! < 0.3) {
+        result = 'Your energy feels very low';
+        resultColor = AppTheme.red;
+      } else if (_energyLevel! < 0.6) {
+        result = 'Your energy feels moderate';
+        resultColor = AppTheme.orange;
+      } else {
+        result = 'Your energy feels steady and positive.';
+        resultColor = AppTheme.green;
+      }
+      badge = _energyLevel! >= 0.6 ? 'High' : (_energyLevel! >= 0.3 ? 'Mid' : 'Low');
+      badgeColor = _energyLevel! >= 0.6
+          ? AppTheme.green
+          : (_energyLevel! >= 0.3 ? AppTheme.orange : AppTheme.red);
     }
-    final badge = _energyLevel >= 0.6 ? 'High' : (_energyLevel >= 0.3 ? 'Mid' : 'Low');
-    final badgeColor = _energyLevel >= 0.6
-        ? AppTheme.green
-        : (_energyLevel >= 0.3 ? AppTheme.orange : AppTheme.red);
 
     return _QuestionCard(
       question: 'Question 2 of 3',
       text: 'How is your energy level today?',
+      icon: Icons.bolt_outlined,
       result: result,
       resultColor: resultColor,
       badge: badge,
       badgeColor: badgeColor,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _energyChoice('Low', 0.2, AppTheme.red),
-          _energyChoice('Medium', 0.5, AppTheme.orange),
-          _energyChoice('High', 0.8, AppTheme.green),
-        ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: [Colors.grey.withOpacity(0.4), Colors.teal.withOpacity(0.4)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _energyChoice('Low', 0.2, AppTheme.red),
+            _energyChoice('Medium', 0.5, AppTheme.orange),
+            _energyChoice('High', 0.8, AppTheme.green),
+          ],
+        ),
       ),
     );
   }
 
   Widget _energyChoice(String label, double value, Color color) {
-    final selected = (_energyLevel - value).abs() < 0.01;
+    final selected = _energyLevel != null && (_energyLevel! - value).abs() < 0.01;
     return GestureDetector(
       onTap: () => setState(() => _energyLevel = value),
       child: AnimatedContainer(
@@ -245,38 +274,50 @@ class _MoodQuestionnaireScreenState extends State<MoodQuestionnaireScreen> {
     return _QuestionCard(
       question: 'Question 3 of 3',
       text: 'How well did you sleep last night?',
+      icon: Icons.nightlight_outlined,
       result: result,
       badge: badge,
       badgeColor: AppTheme.green,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(_sleepOptions.length, (i) {
-          final selected = _sleepQuality == i;
-          return GestureDetector(
-            onTap: () => setState(() => _sleepQuality = i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-              decoration: BoxDecoration(
-                color: selected
-                    ? _sleepColors[i].withOpacity(0.25)
-                    : AppTheme.bgCardLight,
-                borderRadius: BorderRadius.circular(20),
-                border: selected
-                    ? Border.all(color: _sleepColors[i])
-                    : null,
-              ),
-              child: Text(
-                _sleepOptions[i],
-                style: TextStyle(
-                  color: selected ? _sleepColors[i] : AppTheme.textGrey,
-                  fontSize: 12,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: [Colors.blue.withOpacity(0.5), Colors.purple.withOpacity(0.5)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(_sleepOptions.length, (i) {
+            final selected = _sleepQuality == i;
+            return GestureDetector(
+              onTap: () => setState(() => _sleepQuality = i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? AppTheme.bgCardLight
+                      : Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: selected
+                      ? Border.all(color: AppTheme.textWhite)
+                      : null,
+                ),
+                child: Text(
+                  _sleepOptions[i],
+                  style: TextStyle(
+                    color: selected ? AppTheme.textWhite : AppTheme.textWhite.withOpacity(0.8),
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  ),
                 ),
               ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -286,6 +327,7 @@ class _QuestionCard extends StatelessWidget {
   final String question;
   final String text;
   final Widget child;
+  final IconData icon;
   final String? result;
   final Color? resultColor;
   final String? badge;
@@ -295,6 +337,7 @@ class _QuestionCard extends StatelessWidget {
     required this.question,
     required this.text,
     required this.child,
+    required this.icon,
     this.result,
     this.resultColor,
     this.badge,
@@ -318,7 +361,7 @@ class _QuestionCard extends StatelessWidget {
               Text(question,
                   style: const TextStyle(
                       color: AppTheme.accentPurple, fontSize: 12)),
-              const Icon(Icons.emoji_emotions_outlined,
+              Icon(icon,
                   color: AppTheme.textDimmed, size: 18),
             ],
           ),

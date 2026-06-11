@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../main.dart';
 import '../data/app_state.dart';
-import '../services/api_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -52,21 +51,24 @@ class _SignupScreenState extends State<SignupScreen> {
         _passwordError == null) {
       setState(() => _isLoading = true);
       try {
-        final result = await ApiService.signup(
-          _nameCtrl.text.trim(),
-          _emailCtrl.text.trim(),
-          _passwordCtrl.text.trim(),
+        final AuthResponse res = await Supabase.instance.client.auth.signUp(
+          email: _emailCtrl.text.trim(),
+          password: _passwordCtrl.text.trim(),
+          data: {'name': _nameCtrl.text.trim()},
         );
-        AppState.userId = result['user_id'];
-        AppState.userEmail = _emailCtrl.text.trim();
-        AppState.userName = _nameCtrl.text.trim();
-        AppState.userPassword = _passwordCtrl.text.trim();
-        await AppState.saveUserInfo();
-        if (mounted) Navigator.pushReplacementNamed(context, '/home');
+        final user = res.user;
+        if (user != null) {
+          AppState.userId = user.id.hashCode;
+          AppState.userEmail = _emailCtrl.text.trim();
+          AppState.userName = _nameCtrl.text.trim();
+          AppState.userPassword = _passwordCtrl.text.trim();
+          await AppState.saveUserInfo();
+          if (mounted) Navigator.pushReplacementNamed(context, '/home');
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$e'), backgroundColor: AppTheme.red),
+            SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.red),
           );
         }
       } finally {
@@ -116,8 +118,15 @@ class _SignupScreenState extends State<SignupScreen> {
                         border: Border.all(
                             color: AppTheme.accentPurple.withOpacity(0.4)),
                       ),
-                      child: const Icon(Icons.shield_outlined,
-                          color: AppTheme.accentPurple, size: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     const Text(
@@ -187,35 +196,6 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                const Row(
-                  children: [
-                    Expanded(
-                        child: Divider(color: AppTheme.textDimmed, height: 1)),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('Or',
-                          style: TextStyle(
-                              color: AppTheme.textDimmed, fontSize: 13)),
-                    ),
-                    Expanded(
-                        child: Divider(color: AppTheme.textDimmed, height: 1)),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _socialButton('G', const Color(0xFFEA4335)),
-                    const SizedBox(width: 16),
-                    _socialButton('f', const Color(0xFF1877F2)),
-                    const SizedBox(width: 16),
-                    _socialButton('', const Color(0xFF555555),
-                        icon: Icons.apple),
-                  ],
-                ),
-                const SizedBox(height: 28),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -274,27 +254,6 @@ class _SignupScreenState extends State<SignupScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
         ),
-      ),
-    );
-  }
-
-  Widget _socialButton(String label, Color color, {IconData? icon}) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: AppTheme.bgCardLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.3)),
-      ),
-      child: Center(
-        child: icon != null
-            ? Icon(icon, color: Colors.white, size: 22)
-            : Text(
-                label,
-                style: TextStyle(
-                    color: color, fontSize: 18, fontWeight: FontWeight.w700),
-              ),
       ),
     );
   }

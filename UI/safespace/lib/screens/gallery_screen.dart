@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../main.dart';
-import 'splash_screen.dart';
 import 'onboarding_screen.dart';
 import 'signup_screen.dart';
 import 'signin_screen.dart';
@@ -114,7 +112,7 @@ class GalleryScreen extends StatelessWidget {
                           children: [
                             // The actual screen content
                             Padding(
-                              padding: EdgeInsets.all(8.0 * scaleFactor), // Inner bezel thickness
+                              padding: const EdgeInsets.all(8.0 * scaleFactor), // Inner bezel thickness
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(32 * scaleFactor),
                                 child: Transform.scale(
@@ -136,7 +134,7 @@ class GalleryScreen extends StatelessWidget {
                               child: Container(
                                 width: 150 * scaleFactor,
                                 height: 35 * scaleFactor,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.black,
                                   borderRadius: BorderRadius.only(
                                     bottomLeft: Radius.circular(20 * scaleFactor),

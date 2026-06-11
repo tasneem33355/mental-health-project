@@ -181,7 +181,7 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
                     'What is Box Breathing?',
                     style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Text(
                     'Also known as four-square breathing, it is a simple technique used to reduce stress and improve focus. It involves breathing in, holding, breathing out, and holding again, each for an equal count of 4 seconds.',
                     style: TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.5),

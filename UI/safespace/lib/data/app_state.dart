@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
@@ -191,7 +190,10 @@ class AppState {
           final title = lines.isNotEmpty && lines.first.trim().isNotEmpty
               ? lines.first.trim()
               : 'Journal Entry';
-          final preview = content.length > 120 ? '${content.substring(0, 120)}...' : content;
+          final body = lines.length > 2 
+              ? lines.sublist(2).join('\n') 
+              : (lines.length > 1 ? lines.sublist(1).join('\n') : '');
+          final preview = body.length > 120 ? '${body.substring(0, 120)}...' : body;
           return JournalEntry(
             id: (item['id'] as num?)?.toInt(),
             date: date.toLocal(),

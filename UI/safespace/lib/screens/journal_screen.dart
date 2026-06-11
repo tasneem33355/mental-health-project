@@ -11,10 +11,12 @@ class JournalScreen extends StatefulWidget {
 }
 
 class _JournalScreenState extends State<JournalScreen> {
+  final TextEditingController _titleController = TextEditingController();
   final TextEditingController _controller = TextEditingController();
 
   @override
   void dispose() {
+    _titleController.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -32,7 +34,11 @@ class _JournalScreenState extends State<JournalScreen> {
           IconButton(
             icon: const Icon(Icons.check, color: AppTheme.accentPurple),
             onPressed: () async {
-              await AppState.addJournalEntry(_controller.text);
+              final fullContent = _titleController.text.trim().isNotEmpty 
+                  ? '${_titleController.text.trim()}\n\n${_controller.text.trim()}'
+                  : _controller.text.trim();
+              if (fullContent.isEmpty) return;
+              await AppState.addJournalEntry(fullContent);
               if (!mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -52,7 +58,7 @@ class _JournalScreenState extends State<JournalScreen> {
               children: [
                 Text(
                   DateTime.now().toString().split(' ')[0],
-                  style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
+                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -92,17 +98,34 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Widget _buildEditor() {
-    return TextField(
-      controller: _controller,
-      maxLines: null,
-      expands: true,
-      style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, height: 1.6),
-      decoration: const InputDecoration(
-        hintText: 'Start writing your thoughts here...',
-        hintStyle: TextStyle(color: AppTheme.textDimmed),
-        border: InputBorder.none,
-        focusedBorder: InputBorder.none,
-      ),
+    return Column(
+      children: [
+        TextField(
+          controller: _titleController,
+          style: const TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+          decoration: const InputDecoration(
+            hintText: 'Journal Title',
+            hintStyle: TextStyle(color: AppTheme.textDimmed),
+            border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+          ),
+        ),
+        const Divider(color: AppTheme.textDimmed, height: 1),
+        Expanded(
+          child: TextField(
+            controller: _controller,
+            maxLines: null,
+            expands: true,
+            style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, height: 1.6),
+            decoration: const InputDecoration(
+              hintText: 'Start writing your thoughts here...',
+              hintStyle: TextStyle(color: AppTheme.textDimmed),
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -142,6 +165,11 @@ class _JournalScreenState extends State<JournalScreen> {
   }
 
   Future<void> _showEntryDetails(JournalEntry entry) async {
+    final lines = entry.content.split('\n');
+    final body = lines.length > 2 
+        ? lines.sublist(2).join('\n') 
+        : (lines.length > 1 ? lines.sublist(1).join('\n') : '');
+
     await showModalBottomSheet(
       context: context,
       backgroundColor: AppTheme.bgCard,
@@ -159,7 +187,7 @@ class _JournalScreenState extends State<JournalScreen> {
               const SizedBox(height: 8),
               Text(_formatDate(entry.date), style: const TextStyle(color: AppTheme.textDimmed, fontSize: 12)),
               const SizedBox(height: 16),
-              Text(entry.content, style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.6)),
+              Text(body, style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.6)),
               const SizedBox(height: 20),
             ],
           ),
@@ -170,20 +198,43 @@ class _JournalScreenState extends State<JournalScreen> {
 
   Future<void> _showEditDialog(JournalEntry entry) async {
     if (entry.id == null) return;
-    final controller = TextEditingController(text: entry.content);
+    
+    final lines = entry.content.split('\n');
+    final title = lines.isNotEmpty ? lines.first : '';
+    final body = lines.length > 2 
+        ? lines.sublist(2).join('\n') 
+        : (lines.length > 1 ? lines.sublist(1).join('\n') : '');
+
+    final titleController = TextEditingController(text: title);
+    final bodyController = TextEditingController(text: body);
+
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
         title: const Text('Edit Entry', style: TextStyle(color: AppTheme.textWhite)),
-        content: TextField(
-          controller: controller,
-          maxLines: 6,
-          style: const TextStyle(color: AppTheme.textWhite),
-          decoration: const InputDecoration(
-            hintText: 'Update your entry',
-            hintStyle: TextStyle(color: AppTheme.textDimmed),
-          ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: titleController,
+              style: const TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.bold),
+              decoration: const InputDecoration(
+                hintText: 'Title',
+                hintStyle: TextStyle(color: AppTheme.textDimmed),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: bodyController,
+              maxLines: 4,
+              style: const TextStyle(color: AppTheme.textWhite),
+              decoration: const InputDecoration(
+                hintText: 'Content',
+                hintStyle: TextStyle(color: AppTheme.textDimmed),
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -192,9 +243,12 @@ class _JournalScreenState extends State<JournalScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              final newFullContent = titleController.text.trim().isNotEmpty
+                  ? '${titleController.text.trim()}\n\n${bodyController.text.trim()}'
+                  : bodyController.text.trim();
               await ApiService.updateJournalEntry(
                 entryId: entry.id!,
-                content: controller.text,
+                content: newFullContent,
               );
               await AppState.refreshJournalEntries();
               if (!mounted) return;

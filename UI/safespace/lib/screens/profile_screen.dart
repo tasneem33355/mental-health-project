@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../data/app_state.dart';
 
@@ -75,21 +76,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 8),
-              Text(
-                AppState.userEmail ?? 'user@example.com',
-                style: const TextStyle(
-                  color: AppTheme.textGrey,
-                  fontSize: 14,
-                ),
-              ),
               const SizedBox(height: 32),
 
 
 
-              // Other Profile Options (Examples)
-              _profileOption(Icons.settings_outlined, 'Settings'),
+              // Other Profile Options
+              _profileOption(Icons.settings_outlined, 'Settings', onTap: () => Navigator.pushNamed(context, '/settings')),
 
-              _profileOption(Icons.help_outline, 'Help Center'),
+              _profileOption(Icons.help_outline, 'Help Center', onTap: () {}),
               const SizedBox(height: 40),
 
               // Logout Button
@@ -97,6 +91,7 @@ class ProfileScreen extends StatelessWidget {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () async {
+                    await Supabase.instance.client.auth.signOut();
                     await AppState.clearUserInfo();
                     if (context.mounted) {
                       Navigator.pushReplacementNamed(context, '/signin');
@@ -123,45 +118,48 @@ class ProfileScreen extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.15),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: color, size: 32),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.15),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: color, size: 32),
         ),
         const SizedBox(height: 8),
         Text(
           label,
-          style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
+          style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
         ),
       ],
     );
   }
 
-  Widget _profileOption(IconData icon, String title) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: AppTheme.accentPurple, size: 22),
-          const SizedBox(width: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppTheme.textWhite,
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
+  Widget _profileOption(IconData icon, String title, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppTheme.bgCard,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppTheme.accentPurple, size: 22),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: const TextStyle(
+                color: AppTheme.textWhite,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          const Spacer(),
-          const Icon(Icons.chevron_right, color: AppTheme.textDimmed, size: 20),
-        ],
+            const Spacer(),
+            const Icon(Icons.chevron_right, color: AppTheme.textDimmed, size: 20),
+          ],
+        ),
       ),
     );
   }

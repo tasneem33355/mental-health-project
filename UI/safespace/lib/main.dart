@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'data/app_state.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -12,12 +13,11 @@ import 'screens/adhd_exercise_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/recommendation_screen.dart';
 import 'screens/journal_screen.dart';
-import 'screens/explore_screen.dart';
-import 'screens/wellness_screen.dart';
 import 'screens/bubble_pop_screen.dart';
 import 'screens/color_match_screen.dart';
 import 'screens/assessment_screen.dart';
 import 'screens/assessment_intro_screen.dart';
+import 'screens/settings_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +27,13 @@ void main() async {
       statusBarIconBrightness: Brightness.light,
     ),
   );
+
+  await Supabase.initialize(
+    url: 'https://cwjbutxyvglfxzdrvwok.supabase.co',
+    anonKey:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3amJ1dHh5dGdsZnh6ZHJ2d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTE4NzUsImV4cCI6MjA5NjY2Nzg3NX0.G-M4KPFTYX0d5QaV3NmsSwd4Ru50jjyLgGviNd9VOGo',
+  );
+
   await AppState.init();
   runApp(const SafespaceApp());
 }
@@ -53,11 +60,14 @@ class SafespaceApp extends StatelessWidget {
         '/assessment': (ctx) => const AssessmentIntroScreen(),
         '/assessment-start': (ctx) => const AssessmentScreen(),
         '/profile': (ctx) => const ProfileScreen(),
-        '/morning-ritual': (ctx) => const RecommendationScreen(timeOfDay: 'Morning'),
-        '/nightly-unwind': (ctx) => const RecommendationScreen(timeOfDay: 'Evening'),
+        '/morning-ritual': (ctx) =>
+            const RecommendationScreen(timeOfDay: 'Morning'),
+        '/nightly-unwind': (ctx) =>
+            const RecommendationScreen(timeOfDay: 'Evening'),
         '/journal': (ctx) => const JournalScreen(),
         '/bubble-pop': (ctx) => const BubblePopScreen(),
         '/color-match': (ctx) => const ColorMatchScreen(),
+        '/settings': (ctx) => const SettingsScreen(),
       },
     );
   }
@@ -89,7 +99,8 @@ class AppTheme {
           surface: bgCard,
         ),
         textTheme: const TextTheme(
-          displayLarge: TextStyle(color: textWhite, fontWeight: FontWeight.bold),
+          displayLarge:
+              TextStyle(color: textWhite, fontWeight: FontWeight.bold),
           bodyLarge: TextStyle(color: textWhite),
           bodyMedium: TextStyle(color: textGrey),
         ),
@@ -97,9 +108,11 @@ class AppTheme {
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryPurple,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             padding: const EdgeInsets.symmetric(vertical: 16),
-            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            textStyle:
+                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -110,7 +123,8 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       );
 }

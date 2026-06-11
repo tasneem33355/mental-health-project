@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../data/app_state.dart';
-import '../services/api_service.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -37,24 +37,54 @@ class _SigninScreenState extends State<SigninScreen> {
     if (_emailError == null && _passwordError == null) {
       setState(() => _isLoading = true);
       try {
-        final result = await ApiService.login(
-          _emailCtrl.text.trim(),
-          _passwordCtrl.text.trim(),
+        final AuthResponse res = await Supabase.instance.client.auth.signInWithPassword(
+          email: _emailCtrl.text.trim(),
+          password: _passwordCtrl.text.trim(),
         );
-        AppState.userId = result['user_id'];
-        AppState.userEmail = result['email'];
-        AppState.userName = result['name'];
-        AppState.userPassword = _passwordCtrl.text.trim();
-        await AppState.saveUserInfo();
-        if (mounted) Navigator.pushReplacementNamed(context, '/home');
+        final user = res.user;
+        if (user != null) {
+          // You might still want to login to your custom backend or just update AppState
+          AppState.userId = user.id.hashCode; // Keep a numeric ID for compatibility with your python backend
+          AppState.userEmail = user.email ?? _emailCtrl.text.trim();
+          final String nameMeta = user.userMetadata?['name'] ?? '';
+          AppState.userName = nameMeta.isNotEmpty ? nameMeta : AppState.userEmail!.split('@')[0];
+          AppState.userPassword = _passwordCtrl.text.trim();
+          await AppState.saveUserInfo();
+          if (mounted) Navigator.pushReplacementNamed(context, '/home');
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$e'), backgroundColor: AppTheme.red),
+            SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.red),
           );
         }
       } finally {
         if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _forgotPassword() async {
+    final emailText = _emailCtrl.text.trim();
+    if (emailText.isEmpty || !emailText.contains('@')) {
+      setState(() {
+        _emailError = 'Please enter a valid email to reset password';
+      });
+      return;
+    }
+    
+    try {
+      await Supabase.instance.client.auth.resetPasswordForEmail(emailText);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset link sent to your email'), backgroundColor: AppTheme.green),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.red),
+        );
       }
     }
   }
@@ -98,8 +128,15 @@ class _SigninScreenState extends State<SigninScreen> {
                         border: Border.all(
                             color: AppTheme.accentPurple.withOpacity(0.4)),
                       ),
-                      child: const Icon(Icons.shield_outlined,
-                          color: AppTheme.accentPurple, size: 20),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     const Text(
@@ -178,7 +215,7 @@ class _SigninScreenState extends State<SigninScreen> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: _forgotPassword,
                     child: const Text(
                       'Forgot Password?',
                       style: TextStyle(
@@ -201,35 +238,6 @@ class _SigninScreenState extends State<SigninScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
-                Row(
-                  children: [
-                    const Expanded(
-                        child: Divider(color: AppTheme.textDimmed, height: 1)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('Or',
-                          style: TextStyle(
-                              color: AppTheme.textDimmed, fontSize: 13)),
-                    ),
-                    const Expanded(
-                        child: Divider(color: AppTheme.textDimmed, height: 1)),
-                  ],
-                ),
-                const SizedBox(height: 24),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _socialButton('G', const Color(0xFFEA4335)),
-                    const SizedBox(width: 16),
-                    _socialButton('f', const Color(0xFF1877F2)),
-                    const SizedBox(width: 16),
-                    _socialButton('', const Color(0xFF555555),
-                        icon: Icons.apple),
-                  ],
-                ),
-                const SizedBox(height: 28),
 
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -261,24 +269,4 @@ class _SigninScreenState extends State<SigninScreen> {
     );
   }
 
-  Widget _socialButton(String label, Color color, {IconData? icon}) {
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        color: AppTheme.bgCardLight,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.3)),
-      ),
-      child: Center(
-        child: icon != null
-            ? Icon(icon, color: Colors.white, size: 22)
-            : Text(label,
-                style: TextStyle(
-                    color: color,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700)),
-      ),
-    );
-  }
 }

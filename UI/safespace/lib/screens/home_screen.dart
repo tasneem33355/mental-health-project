@@ -17,25 +17,25 @@ class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
 
   final List<_PlanItem> _plan = [
-    _PlanItem(
+    const _PlanItem(
         icon: '🌬️',
         title: 'Morning Ritual',
         subtitle: 'Start your day right',
         color: Color(0xFF4A90D9),
         route: '/morning-ritual'),
-    _PlanItem(
+    const _PlanItem(
         icon: '📓',
         title: 'Safe Journal',
         subtitle: 'Private thoughts',
         color: Color(0xFF9B6FFF),
         route: '/journal'),
-    _PlanItem(
+    const _PlanItem(
         icon: '🧠',
         title: 'ADHD Exercise',
         subtitle: 'Stay focused',
         color: Color(0xFFFF8C42),
         route: '/adhd-exercise'),
-    _PlanItem(
+    const _PlanItem(
         icon: '🌙',
         title: 'Nightly Unwind',
         subtitle: 'Peaceful sleep',
@@ -88,35 +88,21 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text('Good Morning,',
                 style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
             Text(AppState.userName ?? 'Friend',
-                style: TextStyle(
+                style: const TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 24,
                     fontWeight: FontWeight.w700)),
           ],
         ),
-        Stack(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppTheme.bgCardLight,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.notifications_none,
-                  color: AppTheme.textWhite, size: 22),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                    color: AppTheme.primaryPurple, shape: BoxShape.circle),
-              ),
-            ),
-          ],
+        Container(
+          width: 44,
+          height: 44,
+          decoration: const BoxDecoration(
+            color: AppTheme.bgCardLight,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.notifications_none,
+              color: AppTheme.textWhite, size: 22),
         ),
       ],
     );
@@ -134,11 +120,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Text('📖', style: TextStyle(fontSize: 24)),
-          SizedBox(height: 12),
+        children: [
+          Icon(Icons.format_quote_rounded, color: Colors.white, size: 36),
+          SizedBox(height: 8),
           Text(
             '"You don\'t have to control your thoughts. You just have to stop letting them control you."',
             style: TextStyle(
@@ -169,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: () => Navigator.pushNamed(context, '/assessment')),
       _ActionBtn(
           icon: canCheckIn ? Icons.check_circle_outline : Icons.check_circle,
-          label: canCheckIn ? 'Check-In' : 'Done\nToday',
+          label: canCheckIn ? 'Daily\nCheck-In' : 'Done\nToday',
           onTap: () {
             if (canCheckIn) {
               Navigator.pushNamed(context, '/mood-questionnaire').then((_) => setState(() {}));
@@ -538,10 +524,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBottomNav(BuildContext context) {
     final items = [
-      _NavItem(icon: Icons.home_outlined, label: 'Home'),
-      _NavItem(icon: Icons.explore_outlined, label: 'Explore'),
-      _NavItem(icon: Icons.favorite_outline, label: 'Wellness'),
-      _NavItem(icon: Icons.person_outline, label: 'Profile'),
+      const _NavItem(icon: Icons.home_outlined, label: 'Home'),
+      const _NavItem(icon: Icons.explore_outlined, label: 'Explore'),
+      const _NavItem(icon: Icons.favorite_outline, label: 'Wellness'),
+      const _NavItem(icon: Icons.person_outline, label: 'Profile'),
     ];
 
     return Container(

@@ -148,11 +148,15 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.shield_outlined,
-                          color: AppTheme.accentPurple,
-                          size: 90,
+                      child: Center(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            'assets/logo.png',
+                            width: 90,
+                            height: 90,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                     ),

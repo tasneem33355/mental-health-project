@@ -14,19 +14,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<_OnboardingItem> _pages = [
     const _OnboardingItem(
-      title: 'Safespace Helps You Understand How\nYou Feel And Guides Your Toward\nHealthy Recovery',
-      emoji: '🧘',
-      color: Color(0xFF7B3FE4),
+      title: 'Safespace Helps You Understand How\nYou Feel And Guides You Toward\nHealthy Recovery',
+      imagePath: 'assets/onboarding_3.png',
     ),
     const _OnboardingItem(
-      title: 'Track Your Mood Daily\nAnd Discover Your Emotional Patterns',
-      emoji: '📊',
-      color: Color(0xFF5B2EC4),
+      title: 'Build Lasting Healthy Habits\nThrough Guided Exercises And Mindfulness',
+      imagePath: 'assets/onboarding_2.jpg',
     ),
     const _OnboardingItem(
-      title: 'Build Healthy Habits\nWith Guided Exercises And Mindfulness',
-      emoji: '🌟',
-      color: Color(0xFF9B4FF4),
+      title: 'Track Your Mood Every Day\nAnd Gain Insights Into Your Emotional Patterns',
+      imagePath: 'assets/onboarding_1.jpg',
     ),
   ];
 
@@ -66,8 +63,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           color: AppTheme.accentPurple.withOpacity(0.4),
                         ),
                       ),
-                      child: const Icon(Icons.shield_outlined,
-                          color: AppTheme.accentPurple, size: 18),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: Image.asset(
+                          'assets/logo.png',
+                          width: 18,
+                          height: 18,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                     const SizedBox(width: 10),
                     const Text(
@@ -161,24 +165,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Illustration placeholder
-          Container(
-            width: 220,
-            height: 220,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  item.color.withOpacity(0.4),
-                  item.color.withOpacity(0.0),
-                ],
-              ),
-            ),
-            child: Center(
-              child: Text(
-                item.emoji,
-                style: const TextStyle(fontSize: 90),
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Image.asset(
+              item.imagePath,
+              width: 280,
+              height: 280,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 40),
@@ -200,8 +193,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 class _OnboardingItem {
   final String title;
-  final String emoji;
-  final Color color;
-  const _OnboardingItem(
-      {required this.title, required this.emoji, required this.color});
+  final String imagePath;
+  const _OnboardingItem({required this.title, required this.imagePath});
 }

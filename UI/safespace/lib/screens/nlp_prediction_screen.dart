@@ -199,14 +199,14 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
                     color: AppTheme.bgCardLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppTheme.textDimmed),
-                      const SizedBox(width: 12),
+                      Icon(Icons.info_outline, color: AppTheme.textDimmed),
+                      SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           'These scores are raw probabilities from the NLP text model. A higher percentage indicates stronger semantic correlation with the condition.',
-                          style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+                          style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
                         ),
                       ),
                     ],

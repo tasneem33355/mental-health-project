@@ -132,9 +132,8 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
         final data = snapshot.data;
         if (data == null || data.isEmpty) {
           return Container(
-            height: 260,
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
               color: AppTheme.bgCard,
               borderRadius: BorderRadius.circular(16),
@@ -158,13 +157,14 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                 const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => Navigator.pushNamed(context, '/assessment'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryPurple.withOpacity(0.2),
-                    foregroundColor: AppTheme.accentPurple,
-                    elevation: 0,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryPurple.withOpacity(0.2),
+                      foregroundColor: AppTheme.accentPurple,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: const Text('Take Assessment', style: TextStyle(fontSize: 14)),
                   ),
-                  child: const Text('Take Assessment'),
-                ),
               ],
             ),
           );

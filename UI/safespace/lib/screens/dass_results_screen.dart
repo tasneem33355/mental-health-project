@@ -181,7 +181,7 @@ class DassResultsScreen extends StatelessWidget {
             if (primaryCondition != null || severity != null || cause != null)
               _buildAiSummaryGrid(primaryCondition, severity, cause),
             const SizedBox(height: 24),
-            _buildScorePieChart(scores),
+            _buildClinicalProfile(scores),
             const SizedBox(height: 32),
 
             // Recommendations Section
@@ -342,70 +342,89 @@ class DassResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultCard(String title, int score) {
-    final level = _getLevel(title, score);
-    final color = _getColor(level);
-
+  Widget _buildClinicalProfile(Map<String, int> scores) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                    color: AppTheme.textWhite,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold),
-              ),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: color.withOpacity(0.5)),
-                ),
-                child: Text(
-                  level,
-                  style: TextStyle(
-                      color: color, fontSize: 12, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
+          const Text(
+            'Clinical Profile',
+            style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LinearProgressIndicator(
-                    value: score /
-                        56, // Max possible score is 56 per scale (14 * 4 with 5 options)
-                    backgroundColor: AppTheme.bgDark,
-                    valueColor: AlwaysStoppedAnimation<Color>(color),
-                    minHeight: 8,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                '$score/56',
-                style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
-              ),
-            ],
+          const SizedBox(height: 8),
+          const Text(
+            'Percentage of maximum intensity for each category.',
+            style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
           ),
+          const SizedBox(height: 24),
+          _buildProfileBar('Depression', scores['Depression'] ?? 0),
+          const SizedBox(height: 24),
+          _buildProfileBar('Anxiety', scores['Anxiety'] ?? 0),
+          const SizedBox(height: 24),
+          _buildProfileBar('Stress', scores['Stress'] ?? 0),
         ],
       ),
+    );
+  }
+
+  Widget _buildProfileBar(String title, int score) {
+    final level = _getLevel(title, score);
+    final color = _getColor(level);
+    final percentage = (score / 42) * 100;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Raw Score: $score/42',
+                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 11),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: TextStyle(color: color, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  level,
+                  style: TextStyle(color: color, fontSize: 11),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(
+            value: score / 42,
+            backgroundColor: AppTheme.bgDark,
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 12,
+          ),
+        ),
+      ],
     );
   }
 
@@ -486,105 +505,6 @@ class DassResultsScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildScorePieChart(Map<String, int> scores) {
-    final depression = (scores['Depression'] ?? 0).toDouble();
-    final anxiety = (scores['Anxiety'] ?? 0).toDouble();
-    final stress = (scores['Stress'] ?? 0).toDouble();
-    final total = depression + anxiety + stress;
-    final depressionPct = total == 0 ? 0 : (depression / total) * 100;
-    final anxietyPct = total == 0 ? 0 : (anxiety / total) * 100;
-    final stressPct = total == 0 ? 0 : (stress / total) * 100;
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.textDimmed.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Score Breakdown',
-            style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              // Large Pie Chart
-              Expanded(
-                flex: 3,
-                child: SizedBox(
-                  height: 260,
-                  child: PieChart(
-                    PieChartData(
-                      sectionsSpace: 4,
-                      centerSpaceRadius: 55,
-                      sections: [
-                        PieChartSectionData(
-                          color: AppTheme.accentPurple,
-                          value: depressionPct.toDouble(),
-                          title: '${depressionPct.toStringAsFixed(0)}%',
-                          radius: 65,
-                          titleStyle: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                        PieChartSectionData(
-                          color: AppTheme.orange,
-                          value: anxietyPct.toDouble(),
-                          title: '${anxietyPct.toStringAsFixed(0)}%',
-                          radius: 65,
-                          titleStyle: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                        PieChartSectionData(
-                          color: AppTheme.green,
-                          value: stressPct.toDouble(),
-                          title: '${stressPct.toStringAsFixed(0)}%',
-                          radius: 65,
-                          titleStyle: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Vertical Legend
-              Expanded(
-                flex: 2,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _pieLegend('Depression', AppTheme.accentPurple),
-                    const SizedBox(height: 16),
-                    _pieLegend('Anxiety', AppTheme.orange),
-                    const SizedBox(height: 16),
-                    _pieLegend('Stress', AppTheme.green),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pieLegend(String label, Color color) {
-    return Row(
-      children: [
-        Container(
-            width: 10,
-            height: 10,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
-        const SizedBox(width: 6),
-        Text(label,
-            style: const TextStyle(color: AppTheme.textGrey, fontSize: 12)),
-      ],
     );
   }
 }

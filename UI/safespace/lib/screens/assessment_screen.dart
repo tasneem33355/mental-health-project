@@ -25,13 +25,13 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
     'Applied to me very much',
   ];
 
-  void _onOptionSelected(int value) {
+  void _onOptionSelected(int questionIndex, int value) {
     setState(() {
-      _answers[_currentIndex] = value;
+      _answers[questionIndex] = value;
     });
 
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (_currentIndex < dassQuestions.length - 1) {
+      if (_currentIndex < dassQuestions.length) {
         _pageController.nextPage(
           duration: const Duration(milliseconds: 400),
           curve: Curves.easeInOut,
@@ -138,8 +138,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double progress = (_currentIndex + 1) / dassQuestions.length;
-    final isIntroPage = _currentIndex == 0;
+    double progress = _currentIndex == 0 ? 0.0 : _currentIndex / dassQuestions.length;
 
     return Scaffold(
       backgroundColor: AppTheme.bgDark,
@@ -150,15 +149,15 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           icon: const Icon(Icons.close, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Column(
+        title: const Column(
           children: [
-            const Text(
+            Text(
               'Full Assessment',
               style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             Text(
               'Text + DASS-42',
-              style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+              style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
             ),
           ],
         ),
@@ -174,7 +173,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Question ${_currentIndex + 1} of ${dassQuestions.length}',
+                      _currentIndex == 0 ? 'Reflection' : 'Question $_currentIndex of ${dassQuestions.length}',
                       style: const TextStyle(
                         color: AppTheme.accentPurple,
                         fontSize: 13,
@@ -204,22 +203,27 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: (index) => setState(() => _currentIndex = index),
-              itemCount: dassQuestions.length,
+              itemCount: dassQuestions.length + 1,
               itemBuilder: (context, index) {
-                final question = dassQuestions[index];
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (index == 0) _buildIntroCard(),
-                      if (index == 0) const SizedBox(height: 16),
-                      if (index == 0) _buildTextCard(),
-                      if (index == 0) const SizedBox(height: 24),
-                      _buildQuestionCard(question.text, index),
-                    ],
-                  ),
-                );
+                if (index == 0) {
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildIntroCard(),
+                        const SizedBox(height: 16),
+                        _buildTextCard(),
+                      ],
+                    ),
+                  );
+                } else {
+                  final qIndex = index - 1;
+                  return SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: _buildQuestionCard(dassQuestions[qIndex].text, qIndex),
+                  );
+                }
               },
             ),
           ),
@@ -241,7 +245,20 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   )
                 else
                   const SizedBox(),
-                if (_currentIndex == dassQuestions.length - 1)
+                if (_currentIndex == 0)
+                  ElevatedButton(
+                    onPressed: () {
+                      _pageController.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                    ),
+                    child: const Text('Next'),
+                  )
+                else if (_currentIndex == dassQuestions.length)
                   ElevatedButton(
                     onPressed: _submit,
                     style: ElevatedButton.styleFrom(
@@ -275,7 +292,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Write in Arabic or English. This text is used with the survey for a combined analysis.',
+            'Write in Arabic or English. The survey works better with longer sentences, so describe your feeling more fully.',
             style: TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 12),
@@ -287,8 +304,33 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
               hintText: 'Type how you feel...'
             ),
           ),
+          const SizedBox(height: 16),
+          const Text('Quick Examples (Tap to paste):', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _exampleChip('Academic Stress', 'I haven’t been focusing on my studies lately. Most of my time is spent on my phone, scrolling through social media or playing games instead of studying and finishing my work. Because of that, I’ve been wasting a lot of time and not paying enough attention to my lessons or assignments. My grades have become really bad, and I feel disappointed in myself because I know I could do much better if I managed my time and focused more on studying.'),
+              _exampleChip('Work Burnout', 'Work has been overwhelming. I feel like I\'m constantly drowning in tasks and I can\'t catch a break. Even when I log off, I\'m still thinking about emails I need to answer. I feel exhausted, unmotivated, and completely drained of energy.'),
+              _exampleChip('Social Anxiety', 'I\'ve been feeling really isolated lately, but at the same time, the thought of going out and being around people makes me extremely anxious and nervous. I worry too much about what others think of me and feel like everyone is judging me.'),
+            ],
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _exampleChip(String label, String text) {
+    return ActionChip(
+      label: Text(label, style: const TextStyle(color: AppTheme.accentPurple, fontSize: 11)),
+      backgroundColor: AppTheme.primaryPurple.withOpacity(0.1),
+      side: BorderSide(color: AppTheme.primaryPurple.withOpacity(0.3)),
+      onPressed: () {
+        setState(() {
+          _textController.text = text;
+        });
+      },
     );
   }
 
@@ -300,9 +342,9 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
+        children: [
           Text(
             'Quick Brief',
             style: TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.w600),
@@ -345,7 +387,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: GestureDetector(
-              onTap: () => _onOptionSelected(optIdx),
+              onTap: () => _onOptionSelected(index, optIdx),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

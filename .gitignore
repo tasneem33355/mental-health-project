@@ -27,6 +27,9 @@ UI/safespace/linux/
 *.gif
 *.webp
 
+# Exceptions
+!UI/safespace/assets/**
+
 # System/Logs
 *.log
 .DS_Store

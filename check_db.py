@@ -2,7 +2,7 @@ import os
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-DATABASE_URL = "postgresql://safespace:AdminAdmin@postgresql-208383-0.cloudclusters.net:19712/safespace"
+DATABASE_URL = "postgresql://postgres.cwjbutxytglfxzdrvwok:SafeSpace2026@aws-0-eu-west-3.pooler.supabase.com:5432/postgres"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

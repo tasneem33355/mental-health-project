@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../main.dart';
 import '../services/api_service.dart';
 import 'grounding_screen.dart';
