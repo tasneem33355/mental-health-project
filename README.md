@@ -1,13 +1,3 @@
----
-title: SafeSpace API
-emoji: 🧠
-colorFrom: blue
-colorTo: green
-sdk: docker
-python_version: "3.11"
-pinned: false
----
-
 # 🧠 SafeSpace: AI-Powered Multi-Modal Mental Health Companion
 
 SafeSpace is a cross-platform companion application designed to bridge the gap between clinical psychometric frameworks and modern natural language processing. It combines standard clinical surveys with context-aware dialectal Arabic and English journaling to deliver personalized, root-cause-driven coping recommendations.
