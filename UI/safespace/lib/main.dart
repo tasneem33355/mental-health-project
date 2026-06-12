@@ -29,7 +29,7 @@ void main() async {
   );
 
   await Supabase.initialize(
-    url: 'https://cwjbutxyvglfxzdrvwok.supabase.co',
+    url: 'https://cwjbutxytglfxzdrvwok.supabase.co',
     anonKey:
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN3amJ1dHh5dGdsZnh6ZHJ2d29rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwOTE4NzUsImV4cCI6MjA5NjY2Nzg3NX0.G-M4KPFTYX0d5QaV3NmsSwd4Ru50jjyLgGviNd9VOGo',
   );
