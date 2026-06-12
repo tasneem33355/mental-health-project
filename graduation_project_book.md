@@ -534,17 +534,19 @@ Each condition-cause combination provides separate recommendation sets for `mild
 - International crisis resources including the IASP Crisis Centres directory, Crisis Text Line, Befrienders Worldwide, Egypt's Image helpline, and Saudi Arabia's Musanadah line
 - An urgent bilingual referral directing the user to contact a crisis line or visit the nearest emergency room immediately
 
-### 5.6 Streamlit Web Dashboard
+### 5.6 Cross-Platform Flutter Web Deployment
 
-**Purpose.** In addition to the Flutter mobile client, a standalone web-based assessment interface was developed using Streamlit. This web dashboard provides a browser-accessible version of the full assessment pipeline, intended for demonstration purposes, supervisor review, and situations where installing the mobile application is not practical.
+**Purpose.** To ensure maximum accessibility and support users who prefer browser-based access without installing a mobile application, the Flutter mobile client was compiled for the web and deployed to production. This web deployment provides a desktop-friendly and browser-accessible version of the entire SafeSpace application, offering supervisors and examiners a zero-installation environment to interact with the project.
 
-**Technologies Used.** The dashboard is implemented in `app.py` (509 lines) using Streamlit 1.x with custom CSS styling for a dark-themed interface. It imports the same AI models (XLM-RoBERTa and MLP) and recommendation engine used by the FastAPI backend but loads them independently using Streamlit's `@st.cache_resource` decorator for model caching.
+**Technologies Used.** The web build compiles the Dart codebase into optimized HTML, CSS, and JavaScript. It utilizes Flutter's multi-engine rendering pipeline, utilizing the HTML renderer for faster initial page loads and compatibility on mobile web browsers, alongside CanvasKit (WebGL-based rendering) for desktop browsers to ensure high-performance UI rendering and smooth 60 FPS animations. The application is hosted on Netlify, a developer-centric cloud platform specializing in globally distributed static hosting with integrated continuous deployment.
 
-**User Interface.** The web dashboard presents two input sections. The first is a free-text input area where users can write in Arabic (any dialect) or English. The second is the full DASS-42 survey rendered as 42 slider widgets, each with bilingual labels (English and Arabic), arranged in a two-column layout. A central "Analyze" button triggers the prediction pipeline.
+**Deployment Architecture.**
+*   **Compilation:** The app was built using the `flutter build web --release` compilation command, generating static assets in the `/build/web` directory (including `index.html`, compiled JS main entry points, manifest files, and cached assets).
+*   **Hosting:** The static assets are hosted on Netlify's content delivery network (CDN) edge nodes.
+*   **API Connection:** The web client communicates over HTTPS directly with the FastAPI backend hosted on Hugging Face Spaces (`https://alisakr9997-safespace.hf.space/api/v1`), maintaining a clean frontend-backend separation.
+*   **Routing and Redirections:** A custom `_redirects` configuration file was added to Netlify's deployment directory to handle single-page application (SPA) routing fallbacks, routing all direct sub-page URLs back to `index.html` to allow the Flutter router to manage the internal navigation stack.
 
-**Results Display.** Upon analysis, the dashboard displays three score cards showing the fused probability percentages for depression, anxiety, and stress, color-coded by condition. The primary condition is labeled with its detected severity and root cause. A collapsible expander shows the individual text model and survey model score breakdowns. Below the scores, bilingual recommendations (tips, resources, and referral guidance) are displayed in a two-column layout. If the suicidal flag is triggered, a prominent red crisis box is displayed.
-
-**Relationship to the API.** The Streamlit app contains its own copies of the prediction functions (`predict_text`, `predict_survey`, `fuse_scores`, `keyword_boost`) rather than importing from `core_ai.py`. This duplication exists because the Streamlit app was developed as a parallel prototype alongside the API. Both implementations use identical algorithmic logic, but the Streamlit version loads the XLM-RoBERTa model from a different Hugging Face repository (`tasneem33355/mental-xlmr`) and hardcodes the label ordering rather than loading the label encoder from a pickle file. For production use, the FastAPI backend (`api.py` importing `core_ai.py`) is the canonical implementation.
+**UI/UX and Functional Consistency.** Since the web build compiles from the same codebase as the mobile application, the user experience is completely identical. The web version supports the exact same authentication flow via Supabase, daily check-ins, journal logging, goals management, and DASS-42 assessments. The responsive layout adapts the mobile navigation bar into a spacious dashboard suited for desktop and tablet screens.
 
 ---
 
