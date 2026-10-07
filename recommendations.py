@@ -31,9 +31,9 @@ def get_severity(disease: str, raw_score: float, max_score: float = 1.0) -> str:
     """
     # لو جاي من الموديل كنسبة (0-1)، نحوّله لـ raw score تقريبي
     if max_score == 1.0:
-        # DASS-42 depression max=84, anxiety max=72, stress max=84
-        max_raw = {"depression": 84, "anxiety": 72, "stress": 84}
-        score = int(raw_score * max_raw.get(disease, 84))
+        # DASS-42 max=42 for each condition
+        max_raw = {"depression": 42, "anxiety": 42, "stress": 42}
+        score = int(raw_score * max_raw.get(disease, 42))
     else:
         score = int(raw_score)
 
@@ -50,7 +50,7 @@ CAUSE_KEYWORDS = {
     "work": [
         "شغل", "عمل", "وظيفة", "مدير", "boss", "deadline", "مشروع", "project",
         "office", "مكتب", "راتب", "salary", "overtime", "job", "work", "career",
-        "كثير شغل", "ضغط شغل", "مش قادر أكمل شغل", "tired from work",
+        "كثير شغل", "ضغط شغل", "الشغل", "العمل", "مش قادر أكمل شغل", "tired from work",
     ],
     "relationships": [
         "حبيب", "حبيبة", "زوج", "زوجة", "جوز", "مراتي", "علاقة", "relationship",
@@ -527,6 +527,7 @@ def get_recommendations(
     disease: str,
     disease_score: float,
     user_text: str,
+    max_score: float = 1.0,
 ) -> dict:
     """
     disease      : 'anxiety' | 'depression' | 'stress'
@@ -543,7 +544,7 @@ def get_recommendations(
             **SUICIDAL_REC,
         }
 
-    severity = get_severity(disease, disease_score)
+    severity = get_severity(disease, disease_score, max_score=max_score)
     severity_group = "severe" if severity in ("severe", "extremely_severe") else "mild_moderate"
     cause = extract_cause(user_text)
 

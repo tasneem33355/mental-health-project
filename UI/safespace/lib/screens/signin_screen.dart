@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../data/app_state.dart';
+import '../services/api_service.dart';
+import '../localization.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -19,39 +22,71 @@ class _SigninScreenState extends State<SigninScreen> {
   String? _passwordError;
 
   bool _isLoading = false;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final session = data.session;
+      final event = data.event;
+      if (session != null && (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed)) {
+        final user = session.user;
+        
+        AppState.userId = user.id.hashCode;
+        AppState.userEmail = user.email;
+        final String nameMeta = user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '';
+        AppState.userName = nameMeta.isNotEmpty ? nameMeta : (user.email?.split('@')[0] ?? 'User');
+        AppState.userPassword = '';
+        
+        await AppState.saveUserInfo();
+        
+        try {
+          await Supabase.instance.client.from('profiles').upsert({
+            'id': user.id,
+            'email': user.email,
+            'display_name': nameMeta,
+          });
+        } catch (e) {
+          debugPrint('Profiles table upsert skipped or failed: $e');
+        }
+
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      }
+    });
+  }
 
   void _login() async {
     setState(() {
       final emailText = _emailCtrl.text.trim();
       if (emailText.isEmpty) {
-        _emailError = 'you must enter the Email';
+        _emailError = 'you must enter the Email'.tr;
       } else if (!emailText.contains('@')) {
-        _emailError = 'Please enter a valid email address';
+        _emailError = 'Please enter a valid email address'.tr;
       } else {
         _emailError = null;
       }
       
-      _passwordError = _passwordCtrl.text.trim().isEmpty ? 'you must enter the Password' : null;
+      _passwordError = _passwordCtrl.text.trim().isEmpty ? 'you must enter the Password'.tr : null;
     });
 
     if (_emailError == null && _passwordError == null) {
       setState(() => _isLoading = true);
       try {
-        final AuthResponse res = await Supabase.instance.client.auth.signInWithPassword(
-          email: _emailCtrl.text.trim(),
-          password: _passwordCtrl.text.trim(),
+        final data = await ApiService.login(
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
         );
-        final user = res.user;
-        if (user != null) {
-          // You might still want to login to your custom backend or just update AppState
-          AppState.userId = user.id.hashCode; // Keep a numeric ID for compatibility with your python backend
-          AppState.userEmail = user.email ?? _emailCtrl.text.trim();
-          final String nameMeta = user.userMetadata?['name'] ?? '';
-          AppState.userName = nameMeta.isNotEmpty ? nameMeta : AppState.userEmail!.split('@')[0];
-          AppState.userPassword = _passwordCtrl.text.trim();
-          await AppState.saveUserInfo();
-          if (mounted) Navigator.pushReplacementNamed(context, '/home');
-        }
+        
+        AppState.userId = data["user_id"];
+        AppState.userEmail = data["email"] ?? _emailCtrl.text.trim();
+        AppState.userName = data["name"] ?? AppState.userEmail!.split('@')[0];
+        AppState.userPassword = _passwordCtrl.text.trim();
+        await AppState.saveUserInfo();
+        
+        if (mounted) Navigator.pushReplacementNamed(context, '/home');
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -68,7 +103,7 @@ class _SigninScreenState extends State<SigninScreen> {
     final emailText = _emailCtrl.text.trim();
     if (emailText.isEmpty || !emailText.contains('@')) {
       setState(() {
-        _emailError = 'Please enter a valid email to reset password';
+        _emailError = 'Please enter a valid email to reset password'.tr;
       });
       return;
     }
@@ -77,7 +112,7 @@ class _SigninScreenState extends State<SigninScreen> {
       await Supabase.instance.client.auth.resetPasswordForEmail(emailText);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password reset link sent to your email'), backgroundColor: AppTheme.green),
+          SnackBar(content: Text('Password reset link sent to your email'.tr), backgroundColor: AppTheme.green),
         );
       }
     } catch (e) {
@@ -91,6 +126,7 @@ class _SigninScreenState extends State<SigninScreen> {
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
@@ -100,7 +136,7 @@ class _SigninScreenState extends State<SigninScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -139,8 +175,8 @@ class _SigninScreenState extends State<SigninScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Safespace',
+                    Text(
+                      'Safespace'.tr,
                       style: TextStyle(
                           color: AppTheme.textWhite,
                           fontSize: 20,
@@ -150,8 +186,8 @@ class _SigninScreenState extends State<SigninScreen> {
                 ),
                 const SizedBox(height: 48),
 
-                const Text(
-                  'Login',
+                Text(
+                  'Login'.tr,
                   style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 26,
@@ -163,19 +199,19 @@ class _SigninScreenState extends State<SigninScreen> {
                 TextField(
                   controller: _emailCtrl,
                   keyboardType: TextInputType.emailAddress,
-                  style: const TextStyle(color: AppTheme.textWhite),
+                  style: TextStyle(color: AppTheme.textWhite),
                   decoration: InputDecoration(
-                    hintText: 'Email',
+                    hintText: 'Email'.tr,
                     errorText: _emailError,
-                    errorStyle: const TextStyle(color: AppTheme.red),
-                    prefixIcon: const Icon(Icons.person_outline, color: AppTheme.textDimmed, size: 20),
+                    errorStyle: TextStyle(color: AppTheme.red),
+                    prefixIcon: Icon(Icons.person_outline, color: AppTheme.textDimmed, size: 20),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                      borderSide: BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                      borderSide: BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                   ),
                 ),
@@ -183,12 +219,12 @@ class _SigninScreenState extends State<SigninScreen> {
                 TextField(
                   controller: _passwordCtrl,
                   obscureText: _obscure,
-                  style: const TextStyle(color: AppTheme.textWhite),
+                  style: TextStyle(color: AppTheme.textWhite),
                   decoration: InputDecoration(
-                    hintText: 'Password',
+                    hintText: 'Password'.tr,
                     errorText: _passwordError,
-                    errorStyle: const TextStyle(color: AppTheme.red),
-                    prefixIcon: const Icon(Icons.lock_outline,
+                    errorStyle: TextStyle(color: AppTheme.red),
+                    prefixIcon: Icon(Icons.lock_outline,
                         color: AppTheme.textDimmed, size: 20),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -202,11 +238,11 @@ class _SigninScreenState extends State<SigninScreen> {
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                      borderSide: BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+                      borderSide: BorderSide(color: AppTheme.red, width: 1.5),
                     ),
                   ),
                 ),
@@ -216,8 +252,8 @@ class _SigninScreenState extends State<SigninScreen> {
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
                     onTap: _forgotPassword,
-                    child: const Text(
-                      'Forgot Password?',
+                    child: Text(
+                      'Forgot Password?'.tr,
                       style: TextStyle(
                         color: AppTheme.accentPurple,
                         fontSize: 13,
@@ -234,7 +270,36 @@ class _SigninScreenState extends State<SigninScreen> {
                     onPressed: _isLoading ? null : _login,
                     child: _isLoading
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Login'),
+                        : Text('Login'.tr),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // --- Google Sign-In Button ---
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.08),
+                      foregroundColor: AppTheme.textWhite,
+                      side: BorderSide(color: AppTheme.accentPurple.withOpacity(0.3), width: 1),
+                    ),
+                    onPressed: () async {
+                      try {
+                        await Supabase.instance.client.auth.signInWithOAuth(
+                          OAuthProvider.google,
+                          redirectTo: 'io.supabase.flutter://login-callback',
+                        );
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.red),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.login, size: 20),
+                    label: Text('Continue with Google'.tr),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -242,15 +307,15 @@ class _SigninScreenState extends State<SigninScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account?",
+                    Text("Don't have an account?".tr,
                         style:
                             TextStyle(color: AppTheme.textGrey, fontSize: 14)),
                     const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () =>
                           Navigator.pushReplacementNamed(context, '/signup'),
-                      child: const Text(
-                        'Sign Up',
+                      child: Text(
+                        'Sign Up'.tr,
                         style: TextStyle(
                           color: AppTheme.accentPurple,
                           fontSize: 14,

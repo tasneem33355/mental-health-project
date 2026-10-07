@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../data/app_state.dart';
+import '../localization.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -17,8 +18,8 @@ class ProfileScreen extends StatelessWidget {
             children: [
               const SizedBox(height: 40),
               // Profile Header
-              const Text(
-                'My Profile',
+              Text(
+                'My Profile'.tr,
                 style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 24,
@@ -39,7 +40,7 @@ class ProfileScreen extends StatelessWidget {
                       border: Border.all(color: AppTheme.primaryPurple, width: 3),
                       color: AppTheme.bgCardLight,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.person,
                       size: 80,
                       color: AppTheme.textDimmed,
@@ -51,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppTheme.primaryPurple,
                         shape: BoxShape.circle,
                       ),
@@ -68,8 +69,8 @@ class ProfileScreen extends StatelessWidget {
 
               // User Info
               Text(
-                AppState.userName ?? 'User',
-                style: const TextStyle(
+                AppState.userName ?? 'User'.tr,
+                style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -81,9 +82,8 @@ class ProfileScreen extends StatelessWidget {
 
 
               // Other Profile Options
-              _profileOption(Icons.settings_outlined, 'Settings', onTap: () => Navigator.pushNamed(context, '/settings')),
+              _profileOption(Icons.settings_outlined, 'Settings'.tr, onTap: () => Navigator.pushNamed(context, '/settings')),
 
-              _profileOption(Icons.help_outline, 'Help Center', onTap: () {}),
               const SizedBox(height: 40),
 
               // Logout Button
@@ -99,11 +99,11 @@ class ProfileScreen extends StatelessWidget {
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.red,
-                    side: const BorderSide(color: AppTheme.red),
+                    side: BorderSide(color: AppTheme.red),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  child: const Text('Logout'),
+                  child: Text('Logout'.tr),
                 ),
               ),
               const SizedBox(height: 24),
@@ -128,7 +128,7 @@ class ProfileScreen extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           label,
-          style: const TextStyle(color: AppTheme.textGrey, fontSize: 12),
+          style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
         ),
       ],
     );
@@ -150,14 +150,14 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textWhite,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
-            const Icon(Icons.chevron_right, color: AppTheme.textDimmed, size: 20),
+            Icon(Icons.chevron_right, color: AppTheme.textDimmed, size: 20),
           ],
         ),
       ),

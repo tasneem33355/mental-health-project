@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../data/app_state.dart';
 import '../services/api_service.dart';
+import '../localization.dart';
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -29,10 +30,10 @@ class _JournalScreenState extends State<JournalScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
         elevation: 0,
-        title: const Text('Safe Journal', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Diaries'.tr, style: TextStyle(color: AppTheme.textWhite)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.check, color: AppTheme.accentPurple),
+            icon: Icon(Icons.check, color: AppTheme.accentPurple),
             onPressed: () async {
               final fullContent = _titleController.text.trim().isNotEmpty 
                   ? '${_titleController.text.trim()}\n\n${_controller.text.trim()}'
@@ -42,7 +43,7 @@ class _JournalScreenState extends State<JournalScreen> {
               if (!mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Journal entry saved privately.')),
+                SnackBar(content: Text('Diary entry saved privately.'.tr)),
               );
             },
           ),
@@ -58,11 +59,11 @@ class _JournalScreenState extends State<JournalScreen> {
               children: [
                 Text(
                   DateTime.now().toString().split(' ')[0],
-                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
+                  style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'How are you really doing?',
+                Text(
+                  'How are you really doing?'.tr,
                   style: TextStyle(color: AppTheme.textWhite, fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 24),
@@ -102,23 +103,27 @@ class _JournalScreenState extends State<JournalScreen> {
       children: [
         TextField(
           controller: _titleController,
-          style: const TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
-          decoration: const InputDecoration(
-            hintText: 'Journal Title',
+          keyboardType: TextInputType.text,
+          textInputAction: TextInputAction.next,
+          style: TextStyle(color: AppTheme.textWhite, fontSize: 20, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            hintText: 'Diary Title'.tr,
             hintStyle: TextStyle(color: AppTheme.textDimmed),
             border: InputBorder.none,
             focusedBorder: InputBorder.none,
           ),
         ),
-        const Divider(color: AppTheme.textDimmed, height: 1),
+        Divider(color: AppTheme.textDimmed, height: 1),
         Expanded(
           child: TextField(
             controller: _controller,
+            keyboardType: TextInputType.multiline,
+            textInputAction: TextInputAction.newline,
             maxLines: null,
             expands: true,
-            style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, height: 1.6),
-            decoration: const InputDecoration(
-              hintText: 'Start writing your thoughts here...',
+            style: TextStyle(color: AppTheme.textWhite, fontSize: 16, height: 1.6),
+            decoration: InputDecoration(
+              hintText: 'Start writing your thoughts here...'.tr,
               hintStyle: TextStyle(color: AppTheme.textDimmed),
               border: InputBorder.none,
               focusedBorder: InputBorder.none,
@@ -133,16 +138,16 @@ class _JournalScreenState extends State<JournalScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Journal Library',
+        Text(
+          'Diary Library'.tr,
           style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 12),
         Expanded(
           child: AppState.journalEntries.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    'No entries yet',
+                    'No entries yet'.tr,
                     style: TextStyle(color: AppTheme.textDimmed, fontSize: 12),
                   ),
                 )
@@ -183,11 +188,11 @@ class _JournalScreenState extends State<JournalScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(entry.title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600)),
+              Text(entry.title, style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              Text(_formatDate(entry.date), style: const TextStyle(color: AppTheme.textDimmed, fontSize: 12)),
+              Text(_formatDate(entry.date), style: TextStyle(color: AppTheme.textDimmed, fontSize: 12)),
               const SizedBox(height: 16),
-              Text(body, style: const TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.6)),
+              Text(body, style: TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.6)),
               const SizedBox(height: 20),
             ],
           ),
@@ -212,25 +217,29 @@ class _JournalScreenState extends State<JournalScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
-        title: const Text('Edit Entry', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Edit Entry'.tr, style: TextStyle(color: AppTheme.textWhite)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: titleController,
-              style: const TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(
-                hintText: 'Title',
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.next,
+              style: TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.bold),
+              decoration: InputDecoration(
+                hintText: 'Title'.tr,
                 hintStyle: TextStyle(color: AppTheme.textDimmed),
               ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: bodyController,
+              keyboardType: TextInputType.multiline,
+              textInputAction: TextInputAction.newline,
               maxLines: 4,
-              style: const TextStyle(color: AppTheme.textWhite),
-              decoration: const InputDecoration(
-                hintText: 'Content',
+              style: TextStyle(color: AppTheme.textWhite),
+              decoration: InputDecoration(
+                hintText: 'Content'.tr,
                 hintStyle: TextStyle(color: AppTheme.textDimmed),
               ),
             ),
@@ -239,7 +248,7 @@ class _JournalScreenState extends State<JournalScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+            child: Text('Cancel'.tr, style: TextStyle(color: AppTheme.textGrey)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -255,7 +264,7 @@ class _JournalScreenState extends State<JournalScreen> {
               Navigator.pop(ctx);
               setState(() {});
             },
-            child: const Text('Save'),
+            child: Text('Save'.tr),
           ),
         ],
       ),
@@ -268,12 +277,12 @@ class _JournalScreenState extends State<JournalScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
-        title: const Text('Delete Entry', style: TextStyle(color: AppTheme.textWhite)),
-        content: const Text('This will remove the entry permanently.', style: TextStyle(color: AppTheme.textGrey)),
+        title: Text('Delete Entry'.tr, style: TextStyle(color: AppTheme.textWhite)),
+        content: Text('This will remove the entry permanently.'.tr, style: TextStyle(color: AppTheme.textGrey)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+            child: Text('Cancel'.tr, style: TextStyle(color: AppTheme.textGrey)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -284,7 +293,7 @@ class _JournalScreenState extends State<JournalScreen> {
               setState(() {});
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppTheme.red),
-            child: const Text('Delete'),
+            child: Text('Delete'.tr),
           ),
         ],
       ),
@@ -327,19 +336,19 @@ class _JournalCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(date, style: const TextStyle(color: AppTheme.textDimmed, fontSize: 11)),
+                Text(date, style: TextStyle(color: AppTheme.textDimmed, fontSize: 11)),
                 Row(
                   children: [
                     IconButton(
                       onPressed: onEdit,
-                      icon: const Icon(Icons.edit, color: AppTheme.textDimmed, size: 16),
+                      icon: Icon(Icons.edit, color: AppTheme.textDimmed, size: 16),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                     const SizedBox(width: 8),
                     IconButton(
                       onPressed: onDelete,
-                      icon: const Icon(Icons.delete_outline, color: AppTheme.textDimmed, size: 16),
+                      icon: Icon(Icons.delete_outline, color: AppTheme.textDimmed, size: 16),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
@@ -348,9 +357,9 @@ class _JournalCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            Text(entry.title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(entry.title, style: TextStyle(color: AppTheme.textWhite, fontSize: 14, fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
-            Text(entry.preview, style: const TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4)),
+            Text(entry.preview, style: TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4)),
           ],
         ),
       ),

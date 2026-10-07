@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import 'grounding_screen.dart';
 import 'box_breathing_screen.dart';
 import 'meditation_screen.dart';
+import '../localization.dart';
 
 class WellnessScreen extends StatefulWidget {
   const WellnessScreen({super.key});
@@ -30,8 +31,8 @@ class _WellnessScreenState extends State<WellnessScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            const Text(
-              'Wellness',
+            Text(
+              'Wellness'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
@@ -39,21 +40,21 @@ class _WellnessScreenState extends State<WellnessScreen> {
 
             
             // Wellness Tools
-            const Text(
-              'Wellness Tools',
+            Text(
+              'Wellness Tools'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildToolCard('🌬️', 'Box Breathing', AppTheme.primaryPurple, () {
+                Expanded(child: _buildToolCard('🌬️', 'Box Breathing'.tr, AppTheme.primaryPurple, () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const BoxBreathingScreen()),
                   );
                 })),
                 const SizedBox(width: 16),
-                Expanded(child: _buildToolCard('⚓', '5-4-3-2-1 Grounding', AppTheme.green, () {
+                Expanded(child: _buildToolCard('⚓', '5-4-3-2-1 Grounding'.tr, AppTheme.green, () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const GroundingScreen()),
@@ -64,7 +65,7 @@ class _WellnessScreenState extends State<WellnessScreen> {
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildToolCard('🧘', 'Meditation', AppTheme.accentPurple, () {
+                Expanded(child: _buildToolCard('🧘', 'Meditation'.tr, AppTheme.accentPurple, () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const MeditationScreen()),
@@ -77,16 +78,16 @@ class _WellnessScreenState extends State<WellnessScreen> {
             const SizedBox(height: 32),
 
             // Mini Games (Moved from Explore)
-            const Text(
-              'Mini Games',
+            Text(
+              'Mini Games'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
             Row(
               children: [
-                Expanded(child: _buildMiniGameCard(context, '🎈', 'Bubble Pop', 'Fidget & Relax', '/bubble-pop')),
+                Expanded(child: _buildMiniGameCard(context, '🎈', 'Bubble Pop'.tr, 'Fidget & Relax', '/bubble-pop')),
                 const SizedBox(width: 16),
-                Expanded(child: _buildMiniGameCard(context, '🎨', 'Color Match', 'Distract your mind', '/color-match')),
+                Expanded(child: _buildMiniGameCard(context, '🎨', 'Color Match'.tr, 'Distract your mind', '/color-match')),
               ],
             ),
             const SizedBox(height: 40),
@@ -120,9 +121,9 @@ class _WellnessScreenState extends State<WellnessScreen> {
           children: [
             Text(emoji, style: const TextStyle(fontSize: 32)),
             const SizedBox(height: 12),
-            Text(title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.bold)),
+            Text(title, style: TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+            Text(subtitle, style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
           ],
         ),
       ),
@@ -145,7 +146,7 @@ class _WellnessScreenState extends State<WellnessScreen> {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(color: AppTheme.textWhite, fontSize: 14, fontWeight: FontWeight.bold),
+              style: TextStyle(color: AppTheme.textWhite, fontSize: 14, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
           ],

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
+import '../data/app_state.dart';
+import '../localization.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -29,8 +32,25 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _controller.forward();
 
-    _timer = Timer(const Duration(seconds: 3), () {
-      if (mounted) Navigator.pushReplacementNamed(context, '/onboarding');
+    _timer = Timer(const Duration(seconds: 3), () async {
+      if (mounted) {
+        final session = Supabase.instance.client.auth.currentSession;
+        if (session != null) {
+          final user = session.user;
+          AppState.userId = user.id.hashCode;
+          AppState.userEmail = user.email;
+          final String nameMeta = user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '';
+          AppState.userName = nameMeta.isNotEmpty ? nameMeta : (user.email?.split('@')[0] ?? 'User');
+          AppState.userPassword = '';
+          await AppState.saveUserInfo();
+          
+          if (mounted) {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        } else {
+          Navigator.pushReplacementNamed(context, '/onboarding');
+        }
+      }
     });
   }
 
@@ -45,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: RadialGradient(
             center: Alignment.center,
             radius: 1.2,
@@ -83,8 +103,8 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'Safespace',
+                  Text(
+                    'Safespace'.tr,
                     style: TextStyle(
                       color: AppTheme.textWhite,
                       fontSize: 32,

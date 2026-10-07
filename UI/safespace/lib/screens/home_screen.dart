@@ -5,6 +5,7 @@ import '../data/app_state.dart';
 import 'profile_screen.dart';
 import 'explore_screen.dart';
 import 'wellness_screen.dart';
+import '../localization.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,28 +18,28 @@ class _HomeScreenState extends State<HomeScreen> {
   int _navIndex = 0;
 
   final List<_PlanItem> _plan = [
-    const _PlanItem(
+    _PlanItem(
         icon: '🌬️',
-        title: 'Morning Ritual',
-        subtitle: 'Start your day right',
+        title: 'Morning Ritual'.tr,
+        subtitle: 'Start your day right'.tr,
         color: Color(0xFF4A90D9),
         route: '/morning-ritual'),
-    const _PlanItem(
+    _PlanItem(
         icon: '📓',
-        title: 'Safe Journal',
-        subtitle: 'Private thoughts',
+        title: 'Diaries'.tr,
+        subtitle: 'Private thoughts'.tr,
         color: Color(0xFF9B6FFF),
         route: '/journal'),
-    const _PlanItem(
+    _PlanItem(
         icon: '🧠',
-        title: 'ADHD Exercise',
-        subtitle: 'Stay focused',
+        title: 'ADHD Exercise'.tr,
+        subtitle: 'Stay focused'.tr,
         color: Color(0xFFFF8C42),
         route: '/adhd-exercise'),
-    const _PlanItem(
+    _PlanItem(
         icon: '🌙',
-        title: 'Nightly Unwind',
-        subtitle: 'Peaceful sleep',
+        title: 'Nightly Unwind'.tr,
+        subtitle: 'Peaceful sleep'.tr,
         color: Color(0xFF4CAF82),
         route: '/nightly-unwind'),
   ];
@@ -85,10 +86,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Good Morning,',
+            Text('Good Morning,'.tr,
                 style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
-            Text(AppState.userName ?? 'Friend',
-                style: const TextStyle(
+            Text(AppState.userName ?? 'Friend'.tr,
+                style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 24,
                     fontWeight: FontWeight.w700)),
@@ -97,11 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           width: 44,
           height: 44,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppTheme.bgCardLight,
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.notifications_none,
+          child: Icon(Icons.notifications_none,
               color: AppTheme.textWhite, size: 22),
         ),
       ],
@@ -113,20 +114,22 @@ class _HomeScreenState extends State<HomeScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF3D1A8A), Color(0xFF5B2EC4)],
+        gradient: LinearGradient(
+          colors: AppTheme.isDark 
+              ? [const Color(0xFF3D1A8A), const Color(0xFF5B2EC4)]
+              : [AppTheme.primaryPurple.withOpacity(0.85), AppTheme.primaryPurple],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(Icons.format_quote_rounded, color: Colors.white, size: 36),
           SizedBox(height: 8),
           Text(
-            '"You don\'t have to control your thoughts. You just have to stop letting them control you."',
+            '"You don\'t have to control your thoughts. You just have to stop letting them control you."'.tr,
             style: TextStyle(
               color: Colors.white,
               fontSize: 15,
@@ -136,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SizedBox(height: 8),
           Text(
-            '— Dan Millman',
+            '— Dan Millman'.tr,
             style: TextStyle(
               color: AppTheme.lightPurple,
               fontSize: 13,
@@ -151,21 +154,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildActionButtons(BuildContext context) {
     final canCheckIn = AppState.canCheckIn;
     final buttons = [
-      _ActionBtn(icon: Icons.assignment_outlined, label: 'Full\nAssessment',
+      _ActionBtn(icon: Icons.assignment_outlined, label: 'Full\nAssessment'.tr,
           onTap: () => Navigator.pushNamed(context, '/assessment')),
       _ActionBtn(
           icon: canCheckIn ? Icons.check_circle_outline : Icons.check_circle,
-          label: canCheckIn ? 'Daily\nCheck-In' : 'Done\nToday',
+          label: canCheckIn ? 'Daily\nCheck-In'.tr : 'Done\nToday'.tr,
           onTap: () {
             if (canCheckIn) {
               Navigator.pushNamed(context, '/mood-questionnaire').then((_) => setState(() {}));
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('You have already completed your check-in for today!')),
+                SnackBar(content: Text('You have already completed your check-in for today!'.tr)),
               );
             }
           }),
-      _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log\nMood',
+      _ActionBtn(icon: Icons.sentiment_satisfied_alt, label: 'Log\nMood'.tr,
           onTap: () => Navigator.pushNamed(context, '/mood-patterns')),
     ];
 
@@ -190,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 8),
                   Text(b.label,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textWhite,
                           fontSize: 11,
                           height: 1.1,
@@ -211,14 +214,14 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Your Plan',
+            Text('Your Plan'.tr,
                 style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 18,
                     fontWeight: FontWeight.w600)),
             GestureDetector(
               onTap: () {},
-              child: const Text('See all',
+              child: Text('See all'.tr,
                   style: TextStyle(color: AppTheme.accentPurple, fontSize: 13)),
             ),
           ],
@@ -264,17 +267,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(item.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textWhite,
                           fontWeight: FontWeight.w500,
                           fontSize: 15)),
                   Text(item.subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                           color: AppTheme.textGrey, fontSize: 12)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
+            Icon(Icons.chevron_right,
                 color: AppTheme.textDimmed, size: 20),
           ],
         ),
@@ -288,20 +291,22 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
-        title: const Text('Journal Access', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Diary Access'.tr, style: TextStyle(color: AppTheme.textWhite)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please enter your account password to open your private journal.',
+            Text('Please enter your account password to open your private diary.'.tr,
                 style: TextStyle(color: AppTheme.textGrey, fontSize: 14)),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
               obscureText: true,
-              style: const TextStyle(color: AppTheme.textWhite),
+              keyboardType: TextInputType.text,
+              textInputAction: TextInputAction.done,
+              style: TextStyle(color: AppTheme.textWhite),
               decoration: InputDecoration(
                 hintText: 'Password',
-                hintStyle: const TextStyle(color: AppTheme.textDimmed),
+                hintStyle: TextStyle(color: AppTheme.textDimmed),
                 enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppTheme.textDimmed.withOpacity(0.3))),
               ),
             ),
@@ -310,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+            child: Text('Cancel'.tr, style: TextStyle(color: AppTheme.textGrey)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -319,11 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pushNamed(context, '/journal');
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Incorrect password'), backgroundColor: AppTheme.red),
+                  SnackBar(content: Text('Incorrect password'.tr), backgroundColor: AppTheme.red),
                 );
               }
             },
-            child: const Text('Unlock'),
+            child: Text('Unlock'.tr),
           ),
         ],
       ),
@@ -337,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Goal Tracker',
+            Text('Goal Tracker'.tr,
                 style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 18,
@@ -350,17 +355,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppTheme.primaryPurple.withOpacity(0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.add, color: AppTheme.accentPurple, size: 18),
+                child: Icon(Icons.add, color: AppTheme.accentPurple, size: 18),
               ),
             ),
           ],
         ),
         const SizedBox(height: 14),
         if (AppState.goals.isEmpty)
-          const Padding(
+          Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Center(
-              child: Text('No goals set yet. Add one!',
+              child: Text('No goals set yet. Add one!'.tr,
                   style: TextStyle(color: AppTheme.textDimmed, fontSize: 13)),
             ),
           )
@@ -433,7 +438,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 AppState.removeGoal(goal);
               });
             },
-            icon: const Icon(Icons.delete_outline, color: AppTheme.textDimmed, size: 20),
+            icon: Icon(Icons.delete_outline, color: AppTheme.textDimmed, size: 20),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
@@ -451,14 +456,14 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: AppTheme.bgCard,
-          title: const Text('Add New Goal', style: TextStyle(color: AppTheme.textWhite)),
+          title: Text('Add New Goal'.tr, style: TextStyle(color: AppTheme.textWhite)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: titleController,
-                style: const TextStyle(color: AppTheme.textWhite),
-                decoration: const InputDecoration(
+                style: TextStyle(color: AppTheme.textWhite),
+                decoration: InputDecoration(
                   hintText: 'Goal Title',
                   hintStyle: TextStyle(color: AppTheme.textDimmed),
                 ),
@@ -469,9 +474,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   selectedDate == null
                       ? 'No Deadline'
                       : 'Deadline: ${DateFormat('MMM dd, HH:mm').format(selectedDate!)}',
-                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 14),
+                  style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
                 ),
-                trailing: const Icon(Icons.calendar_today, color: AppTheme.accentPurple),
+                trailing: Icon(Icons.calendar_today, color: AppTheme.accentPurple),
                 onTap: () async {
                   final date = await showDatePicker(
                     context: context,
@@ -503,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+              child: Text('Cancel'.tr, style: TextStyle(color: AppTheme.textGrey)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -524,10 +529,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildBottomNav(BuildContext context) {
     final items = [
-      const _NavItem(icon: Icons.home_outlined, label: 'Home'),
-      const _NavItem(icon: Icons.explore_outlined, label: 'Explore'),
-      const _NavItem(icon: Icons.favorite_outline, label: 'Wellness'),
-      const _NavItem(icon: Icons.person_outline, label: 'Profile'),
+      _NavItem(icon: Icons.home_outlined, label: 'Home'.tr),
+      _NavItem(icon: Icons.explore_outlined, label: 'Explore'.tr),
+      _NavItem(icon: Icons.favorite_outline, label: 'Wellness'.tr),
+      _NavItem(icon: Icons.person_outline, label: 'Profile'.tr),
     ];
 
     return Container(

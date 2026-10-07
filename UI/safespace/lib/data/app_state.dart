@@ -51,15 +51,45 @@ class AppState {
     if (moodJson != null && moodJson.isNotEmpty) {
       moodHistory = moodJson.map((s) => MoodRecord.fromJson(jsonDecode(s))).toList();
     } else {
-      // Pre-fill demo data only on first launch if empty
+      // Pre-fill rich 30-day demo data for demonstration purposes
       if (isFirstLaunch && userId == null) {
         moodHistory = [
-          MoodRecord(date: DateTime.now().subtract(const Duration(days: 6)), stress: 1, energy: 0.8, sleep: 4),
-          MoodRecord(date: DateTime.now().subtract(const Duration(days: 5)), stress: 2, energy: 0.6, sleep: 3),
-          MoodRecord(date: DateTime.now().subtract(const Duration(days: 4)), stress: 3, energy: 0.4, sleep: 2),
-          MoodRecord(date: DateTime.now().subtract(const Duration(days: 3)), stress: 2, energy: 0.7, sleep: 3),
-          MoodRecord(date: DateTime.now().subtract(const Duration(days: 2)), stress: 4, energy: 0.3, sleep: 1),
-          MoodRecord(date: DateTime.now().subtract(const Duration(days: 1)), stress: 1, energy: 0.9, sleep: 4),
+          // --- Week 1 (30-24 days ago): High stress period ---
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 30)), stress: 4, energy: 0.3, sleep: 1),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 29)), stress: 5, energy: 0.2, sleep: 1),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 28)), stress: 4, energy: 0.25, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 27)), stress: 5, energy: 0.2, sleep: 1),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 26)), stress: 4, energy: 0.3, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 25)), stress: 3, energy: 0.35, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 24)), stress: 4, energy: 0.3, sleep: 1),
+          // --- Week 2 (23-17 days ago): Starting to seek help ---
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 23)), stress: 4, energy: 0.35, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 22)), stress: 3, energy: 0.4, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 21)), stress: 3, energy: 0.45, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 20)), stress: 4, energy: 0.35, sleep: 2),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 19)), stress: 3, energy: 0.5, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 18)), stress: 2, energy: 0.55, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 17)), stress: 3, energy: 0.5, sleep: 3),
+          // --- Week 3 (16-10 days ago): Visible improvement ---
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 16)), stress: 2, energy: 0.6, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 15)), stress: 2, energy: 0.65, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 14)), stress: 3, energy: 0.55, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 13)), stress: 2, energy: 0.7, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 12)), stress: 1, energy: 0.75, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 11)), stress: 2, energy: 0.7, sleep: 3),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 10)), stress: 1, energy: 0.8, sleep: 4),
+          // --- Week 4 (9-3 days ago): Stable & healthy ---
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 9)), stress: 1, energy: 0.85, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 8)), stress: 2, energy: 0.75, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 7)), stress: 1, energy: 0.8, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 6)), stress: 1, energy: 0.9, sleep: 5),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 5)), stress: 2, energy: 0.8, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 4)), stress: 1, energy: 0.85, sleep: 5),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 3)), stress: 1, energy: 0.9, sleep: 5),
+          // --- Recent (2-0 days ago): Current state ---
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 2)), stress: 2, energy: 0.8, sleep: 4),
+          MoodRecord(date: DateTime.now().subtract(const Duration(days: 1)), stress: 1, energy: 0.9, sleep: 5),
+          MoodRecord(date: DateTime.now(), stress: 1, energy: 0.95, sleep: 5),
         ];
       } else {
         moodHistory = [];
@@ -71,7 +101,16 @@ class AppState {
     if (goalsJson != null) {
       goals = goalsJson.map((s) => Goal.fromJson(jsonDecode(s))).toList();
     } else {
-      goals = [];
+      if (isFirstLaunch && userId == null) {
+        goals = [
+          Goal(title: 'Complete daily breathing exercise', deadline: DateTime.now().add(const Duration(days: 3)), isDone: true),
+          Goal(title: 'Journal for 5 consecutive days', deadline: DateTime.now().add(const Duration(days: 5)), isDone: true),
+          Goal(title: 'Try the grounding (5-4-3-2-1) technique', deadline: DateTime.now().add(const Duration(days: 2)), isDone: false),
+          Goal(title: 'Sleep 7+ hours for a full week', deadline: DateTime.now().add(const Duration(days: 7)), isDone: false),
+        ];
+      } else {
+        goals = [];
+      }
     }
 
     // Journal entries are loaded from API on demand

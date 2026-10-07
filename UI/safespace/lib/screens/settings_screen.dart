@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../data/app_state.dart';
+import '../localization.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,7 +19,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         await Supabase.instance.client.auth.resetPasswordForEmail(email);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password reset link sent to your email'), backgroundColor: AppTheme.green),
+            SnackBar(content: Text('Password reset link sent to your email'.tr), backgroundColor: AppTheme.green),
           );
         }
       } catch (e) {
@@ -30,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No email found to reset password.'), backgroundColor: AppTheme.red),
+        SnackBar(content: Text('No email found to reset password.'.tr), backgroundColor: AppTheme.red),
       );
     }
   }
@@ -42,9 +43,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
         elevation: 0,
-        title: const Text('Settings', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Settings'.tr, style: TextStyle(color: AppTheme.textWhite)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -53,30 +54,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Account Information',
+            Text(
+              'Account Information'.tr,
               style: TextStyle(color: AppTheme.accentPurple, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('Name', AppState.userName ?? 'User'),
-            _buildInfoRow('Email', Supabase.instance.client.auth.currentUser?.email ?? AppState.userEmail ?? 'Not set'),
+            _buildInfoRow('Name'.tr, AppState.userName ?? 'User'.tr),
+            _buildInfoRow('Email'.tr, Supabase.instance.client.auth.currentUser?.email ?? AppState.userEmail ?? 'Not set'),
             
             const SizedBox(height: 32),
-            const Text(
-              'Security',
+            Text(
+              'Security'.tr,
               style: TextStyle(color: AppTheme.accentPurple, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 16),
-            _settingsOption(Icons.lock_reset_outlined, 'Reset Password', onTap: _resetPassword),
+            _settingsOption(Icons.lock_reset_outlined, 'Reset Password'.tr, onTap: _resetPassword),
             
             const SizedBox(height: 32),
-            const Text(
-              'Preferences',
+            Text(
+              'Preferences'.tr,
               style: TextStyle(color: AppTheme.accentPurple, fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 16),
-            _settingsOption(Icons.notifications_none, 'Notifications', onTap: () {}),
-            _settingsOption(Icons.language, 'Language', trailing: const Text('English', style: TextStyle(color: AppTheme.textGrey))),
+            _settingsOption(
+              AppTheme.isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              'Theme Mode'.tr,
+              trailing: Text(
+                AppTheme.isDark ? 'Dark Mode'.tr : 'Light Mode'.tr,
+                style: TextStyle(color: AppTheme.textGrey),
+              ),
+              onTap: () async {
+                await AppTheme.toggleTheme();
+                setState(() {});
+              },
+            ),
+            _settingsOption(Icons.notifications_none, 'Notifications'.tr, onTap: () {}),
+            _settingsOption(
+              Icons.language,
+              'Language'.tr,
+              trailing: Text(Loc.isArabic ? 'العربية' : 'English'.tr, style: TextStyle(color: AppTheme.textGrey)),
+              onTap: () async {
+                await Loc.toggleLanguage();
+                setState(() {});
+              },
+            ),
           ],
         ),
       ),
@@ -89,8 +110,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textWhite, fontSize: 16)),
-          Text(value, style: const TextStyle(color: AppTheme.textGrey, fontSize: 16)),
+          Text(label, style: TextStyle(color: AppTheme.textWhite, fontSize: 16)),
+          Text(value, style: TextStyle(color: AppTheme.textGrey, fontSize: 16)),
         ],
       ),
     );
@@ -112,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const SizedBox(width: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: AppTheme.textWhite,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -121,7 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             const Spacer(),
             if (trailing != null) trailing,
             if (trailing != null) const SizedBox(width: 8),
-            const Icon(Icons.chevron_right, color: AppTheme.textDimmed, size: 20),
+            Icon(Icons.chevron_right, color: AppTheme.textDimmed, size: 20),
           ],
         ),
       ),

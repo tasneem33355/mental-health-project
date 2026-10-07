@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../localization.dart';
 
 class AssessmentIntroScreen extends StatelessWidget {
   const AssessmentIntroScreen({super.key});
@@ -16,7 +17,7 @@ class AssessmentIntroScreen extends StatelessWidget {
             children: [
               IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: AppTheme.textWhite),
+                icon: Icon(Icons.arrow_back, color: AppTheme.textWhite),
               ),
               const SizedBox(height: 32),
               
@@ -28,7 +29,7 @@ class AssessmentIntroScreen extends StatelessWidget {
                     color: AppTheme.primaryPurple.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.psychology,
                       color: AppTheme.accentPurple,
@@ -39,8 +40,8 @@ class AssessmentIntroScreen extends StatelessWidget {
               ),
               const SizedBox(height: 48),
               
-              const Text(
-                'Full Wellbeing Analysis',
+              Text(
+                'Full Wellbeing Analysis'.tr,
                 style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 28,
@@ -48,8 +49,8 @@ class AssessmentIntroScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
-                'A comprehensive look at your mental health using AI and clinical standards.',
+              Text(
+                'A comprehensive look at your mental health using AI and clinical standards.'.tr,
                 style: TextStyle(
                   color: AppTheme.textGrey,
                   fontSize: 16,
@@ -88,16 +89,16 @@ class AssessmentIntroScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Start Analysis',
+                  child: Text(
+                    'Start Analysis'.tr,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              const Center(
+              Center(
                 child: Text(
-                  'Your privacy is our priority. All data is analyzed securely.',
+                  'Your privacy is our priority. All data is analyzed securely.'.tr,
                   style: TextStyle(color: AppTheme.textDimmed, fontSize: 12),
                 ),
               ),
@@ -127,7 +128,7 @@ class AssessmentIntroScreen extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -136,7 +137,7 @@ class AssessmentIntroScreen extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 description,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppTheme.textGrey,
                   fontSize: 13,
                   height: 1.4,

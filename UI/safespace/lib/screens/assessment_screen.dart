@@ -4,6 +4,7 @@ import '../data/dass_questions.dart';
 import '../data/app_state.dart';
 import '../services/api_service.dart';
 import 'dass_results_screen.dart';
+import '../localization.dart';
 
 class AssessmentScreen extends StatefulWidget {
   const AssessmentScreen({super.key});
@@ -18,11 +19,11 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
   int _currentIndex = 0;
   final Map<int, int> _answers = {};
 
-  final List<String> _options = [
-    'Did not apply to me at all',
-    'Applied to me to some degree',
-    'Applied to me to a considerable degree',
-    'Applied to me very much',
+  List<String> get _options => [
+    'Did not apply to me at all'.tr,
+    'Applied to me to some degree'.tr,
+    'Applied to me to a considerable degree'.tr,
+    'Applied to me very much'.tr,
   ];
 
   void _onOptionSelected(int questionIndex, int value) {
@@ -44,7 +45,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
     final text = _textController.text.trim();
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write how you feel before submitting.')),
+        SnackBar(content: Text('Please write how you feel before submitting.'.tr)),
       );
       return;
     }
@@ -52,7 +53,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
     if (_answers.length < dassQuestions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please answer all questions (${_answers.length}/${dassQuestions.length})'),
+          content: Text('Please answer all questions'.tr),
           backgroundColor: AppTheme.red,
         ),
       );
@@ -83,7 +84,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(
+      builder: (context) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryPurple),
       ),
     );
@@ -146,17 +147,17 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         backgroundColor: AppTheme.bgDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppTheme.textWhite),
+          icon: Icon(Icons.close, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Column(
+        title: Column(
           children: [
             Text(
-              'Full Assessment',
+              'Full Assessment'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             Text(
-              'Text + DASS-42',
+              'Text + DASS-42'.tr,
               style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
             ),
           ],
@@ -173,8 +174,8 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _currentIndex == 0 ? 'Reflection' : 'Question $_currentIndex of ${dassQuestions.length}',
-                      style: const TextStyle(
+                      _currentIndex == 0 ? 'Reflection'.tr : '${'Question'.tr} $_currentIndex ${'of'.tr} ${dassQuestions.length}',
+                      style: TextStyle(
                         color: AppTheme.accentPurple,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -182,7 +183,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                     ),
                     Text(
                       '${(progress * 100).toInt()}%',
-                      style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                      style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                     ),
                   ],
                 ),
@@ -192,7 +193,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   child: LinearProgressIndicator(
                     value: progress,
                     backgroundColor: AppTheme.bgCardLight,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryPurple),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryPurple),
                     minHeight: 6,
                   ),
                 ),
@@ -221,7 +222,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                   final qIndex = index - 1;
                   return SingleChildScrollView(
                     padding: const EdgeInsets.all(24.0),
-                    child: _buildQuestionCard(dassQuestions[qIndex].text, qIndex),
+                    child: _buildQuestionCard(dassQuestions[qIndex].text.tr, qIndex),
                   );
                 }
               },
@@ -240,8 +241,8 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                         curve: Curves.easeInOut,
                       );
                     },
-                    icon: const Icon(Icons.arrow_back, color: AppTheme.accentPurple),
-                    label: const Text('Previous', style: TextStyle(color: AppTheme.accentPurple)),
+                    icon: Icon(Icons.arrow_back, color: AppTheme.accentPurple),
+                    label: Text('Previous'.tr, style: TextStyle(color: AppTheme.accentPurple)),
                   )
                 else
                   const SizedBox(),
@@ -256,7 +257,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
-                    child: const Text('Next'),
+                    child: Text('Next'.tr),
                   )
                 else if (_currentIndex == dassQuestions.length)
                   ElevatedButton(
@@ -264,7 +265,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
-                    child: const Text('Finish'),
+                    child: Text('Finish'.tr),
                   )
                 else
                   const SizedBox(),
@@ -286,34 +287,36 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'How are you feeling right now?',
+          Text(
+            'How are you feeling right now?'.tr,
             style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Write in Arabic or English. The survey works better with longer sentences, so describe your feeling more fully.',
+          Text(
+            'Write in Arabic or English. The survey works better with longer sentences, so describe your feeling more fully.'.tr,
             style: TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _textController,
             maxLines: 4,
-            style: const TextStyle(color: AppTheme.textWhite),
-            decoration: const InputDecoration(
-              hintText: 'Type how you feel...'
+            style: TextStyle(color: AppTheme.textWhite),
+            decoration: InputDecoration(
+              hintText: 'Type how you feel...'.tr
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Quick Examples (Tap to paste):', style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+          Text('Quick Examples (Tap to paste):'.tr, style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: [
-              _exampleChip('Academic Stress', 'I haven’t been focusing on my studies lately. Most of my time is spent on my phone, scrolling through social media or playing games instead of studying and finishing my work. Because of that, I’ve been wasting a lot of time and not paying enough attention to my lessons or assignments. My grades have become really bad, and I feel disappointed in myself because I know I could do much better if I managed my time and focused more on studying.'),
-              _exampleChip('Work Burnout', 'Work has been overwhelming. I feel like I\'m constantly drowning in tasks and I can\'t catch a break. Even when I log off, I\'m still thinking about emails I need to answer. I feel exhausted, unmotivated, and completely drained of energy.'),
-              _exampleChip('Social Anxiety', 'I\'ve been feeling really isolated lately, but at the same time, the thought of going out and being around people makes me extremely anxious and nervous. I worry too much about what others think of me and feel like everyone is judging me.'),
+              _exampleChip('AR - اكتئاب شديد', 'انا مكتئب جدا ومش لاقي معنى للحياة. حياتي خربت وخسرت كل حاجة. مش عايز أصحى من النوم'),
+              _exampleChip('AR - قلق جامعي', 'انا قلقان جدا من الامتحان. خايف ارسب ومش عارف اذاكر. الجامعة ضغط كبير عليا'),
+              _exampleChip('AR - ضغط الشغل', 'ضغط الشغل كتير عليا. مش لاقي وقت لنفسي ومديري بيضغط عليا كل يوم. تعبت نفسياً'),
+              _exampleChip('EN - Depression', 'I feel completely hopeless and exhausted. I have no motivation to get out of bed and nothing brings me joy anymore.'),
+              _exampleChip('EN - Work Stress', 'Work has been overwhelming. I feel like I\'m constantly drowning in tasks and my boss keeps pressuring me.'),
             ],
           ),
         ],
@@ -323,7 +326,7 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
 
   Widget _exampleChip(String label, String text) {
     return ActionChip(
-      label: Text(label, style: const TextStyle(color: AppTheme.accentPurple, fontSize: 11)),
+      label: Text(label, style: TextStyle(color: AppTheme.accentPurple, fontSize: 11)),
       backgroundColor: AppTheme.primaryPurple.withOpacity(0.1),
       side: BorderSide(color: AppTheme.primaryPurple.withOpacity(0.3)),
       onPressed: () {
@@ -342,16 +345,16 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.textDimmed.withOpacity(0.2)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Quick Brief',
+            'Quick Brief'.tr,
             style: TextStyle(color: AppTheme.textWhite, fontSize: 15, fontWeight: FontWeight.w600),
           ),
           SizedBox(height: 8),
           Text(
-            'This assessment combines your written reflection with 42 questions. It helps you understand your mood patterns, not a medical diagnosis.',
+            'This assessment combines your written reflection with 42 questions. It helps you understand your mood patterns, not a medical diagnosis.'.tr,
             style: TextStyle(color: AppTheme.textGrey, fontSize: 12, height: 1.4),
           ),
         ],
@@ -369,12 +372,12 @@ class _AssessmentScreenState extends State<AssessmentScreen> {
             color: AppTheme.primaryPurple.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: const Icon(Icons.psychology_outlined, color: AppTheme.accentPurple),
+          child: Icon(Icons.psychology_outlined, color: AppTheme.accentPurple),
         ),
         const SizedBox(height: 24),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppTheme.textWhite,
             fontSize: 22,
             fontWeight: FontWeight.w700,

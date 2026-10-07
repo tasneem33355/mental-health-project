@@ -14,6 +14,7 @@ import 'journal_screen.dart';
 import 'explore_screen.dart';
 import 'wellness_screen.dart';
 import 'bubble_pop_screen.dart';
+import '../localization.dart';
 
 class GalleryScreen extends StatelessWidget {
   const GalleryScreen({super.key});
@@ -27,23 +28,23 @@ class GalleryScreen extends StatelessWidget {
 
     final screens = [
       _GalleryItem(title: 'Onboarding', widget: const OnboardingScreen()),
-      _GalleryItem(title: 'Sign In', widget: const SigninScreen()),
-      _GalleryItem(title: 'Sign Up', widget: const SignupScreen()),
-      _GalleryItem(title: 'Home', widget: const HomeScreen()),
-      _GalleryItem(title: 'Wellness', widget: const WellnessScreen()),
-      _GalleryItem(title: 'Explore', widget: const ExploreScreen()),
+      _GalleryItem(title: 'Sign In'.tr, widget: const SigninScreen()),
+      _GalleryItem(title: 'Sign Up'.tr, widget: const SignupScreen()),
+      _GalleryItem(title: 'Home'.tr, widget: const HomeScreen()),
+      _GalleryItem(title: 'Wellness'.tr, widget: const WellnessScreen()),
+      _GalleryItem(title: 'Explore'.tr, widget: const ExploreScreen()),
       _GalleryItem(title: 'Mood Patterns', widget: const MoodPatternsScreen()),
-      _GalleryItem(title: 'Mood Questionnaire', widget: const MoodQuestionnaireScreen()),
-      _GalleryItem(title: 'ADHD Exercise', widget: const AdhdExerciseScreen()),
+      _GalleryItem(title: 'Mood Questionnaire'.tr, widget: const MoodQuestionnaireScreen()),
+      _GalleryItem(title: 'ADHD Exercise'.tr, widget: const AdhdExerciseScreen()),
       _GalleryItem(title: 'DASS Questionnaire', widget: const DassQuestionnaireScreen()),
       _GalleryItem(
         title: 'DASS Results', 
         widget: const DassResultsScreen(scores: {'Depression': 12, 'Anxiety': 8, 'Stress': 15})
       ),
-      _GalleryItem(title: 'Profile', widget: const ProfileScreen()),
-      _GalleryItem(title: 'Morning Ritual', widget: const RecommendationScreen(timeOfDay: 'Morning')),
+      _GalleryItem(title: 'Profile'.tr, widget: const ProfileScreen()),
+      _GalleryItem(title: 'Morning Ritual'.tr, widget: const RecommendationScreen(timeOfDay: 'Morning')),
       _GalleryItem(title: 'Journal', widget: const JournalScreen()),
-      _GalleryItem(title: 'Bubble Pop', widget: const BubblePopScreen()),
+      _GalleryItem(title: 'Bubble Pop'.tr, widget: const BubblePopScreen()),
     ];
 
     return Scaffold(

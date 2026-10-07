@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../main.dart';
 import '../data/app_state.dart';
 import '../services/api_service.dart';
+import '../localization.dart';
 
 class MoodPatternsScreen extends StatefulWidget {
   const MoodPatternsScreen({super.key});
@@ -34,11 +35,17 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
         .map((item) {
           final date = DateTime.tryParse(item['created_at'].toString());
           if (date == null) return null;
+          double dbMood = (item['mood'] as num).toDouble();
+          int mappedMood = dbMood > 4 ? (dbMood / 10.0 * 4.0).round() : dbMood.toInt();
+          
+          double dbSleep = (item['sleep'] as num).toDouble();
+          int mappedSleep = dbSleep > 4 ? (dbSleep / 10.0 * 4.0).round() : dbSleep.toInt();
+
           return MoodRecord(
             date: date.toLocal(),
-            stress: (item['mood'] as num).toInt(),
+            stress: mappedMood,
             energy: (item['energy'] as num).toDouble() / 10.0,
-            sleep: (item['sleep'] as num).toInt(),
+            sleep: mappedSleep,
           );
         })
         .whereType<MoodRecord>()
@@ -60,11 +67,11 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               color: AppTheme.bgCard,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.arrow_back_ios_new,
+            child: Icon(Icons.arrow_back_ios_new,
                 color: AppTheme.textWhite, size: 16),
           ),
         ),
-        title: const Text('Mood Tracking',
+        title: Text('Mood Tracking'.tr,
             style: TextStyle(
                 color: AppTheme.textWhite,
                 fontSize: 17,
@@ -75,7 +82,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Here's your wellness journey over the past week.",
               style: TextStyle(color: AppTheme.textGrey, fontSize: 14),
             ),
@@ -84,8 +91,8 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
             const SizedBox(height: 32),
 
             // Assessment History Graph
-            const Text(
-              'DASS 42 Assessment History',
+            Text(
+              'DASS 42 Assessment History'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
@@ -108,7 +115,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               color: AppTheme.bgCard,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
+            child: Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
           );
         }
 
@@ -123,13 +130,20 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               child: Text(
                 'Could not load history:\n${snapshot.error}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppTheme.red),
+                style: TextStyle(color: AppTheme.red),
               ),
             ),
           );
         }
 
-        final data = snapshot.data;
+        final rawData = snapshot.data;
+        final data = rawData?.where((r) {
+          final d = (r['depression'] ?? 0) as num;
+          final a = (r['anxiety'] ?? 0) as num;
+          final s = (r['stress'] ?? 0) as num;
+          return d > 0 || a > 0 || s > 0;
+        }).toList();
+
         if (data == null || data.isEmpty) {
           return Container(
             width: double.infinity,
@@ -142,15 +156,15 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.analytics_outlined, color: AppTheme.textDimmed, size: 48),
+                Icon(Icons.analytics_outlined, color: AppTheme.textDimmed, size: 48),
                 const SizedBox(height: 16),
-                const Text(
-                  'No assessments yet',
+                Text(
+                  'No assessments yet'.tr,
                   style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Complete a DASS-42 assessment to see your progress here.',
+                Text(
+                  'Complete a DASS-42 assessment to see your progress here.'.tr,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                 ),
@@ -163,7 +177,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
-                    child: const Text('Take Assessment', style: TextStyle(fontSize: 14)),
+                    child: Text('Take Assessment'.tr, style: TextStyle(fontSize: 14)),
                   ),
               ],
             ),
@@ -218,7 +232,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
                                   data[index]['date'].toString(),
-                                  style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                                  style: TextStyle(color: AppTheme.textDimmed, fontSize: 10),
                                 ),
                               );
                             }
@@ -234,7 +248,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                           getTitlesWidget: (value, meta) {
                             return Text(
                               value.toInt().toString(),
-                              style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                              style: TextStyle(color: AppTheme.textDimmed, fontSize: 10),
                             );
                           },
                         ),
@@ -275,7 +289,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               color: AppTheme.bgCard,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Center(
+            child: Center(
               child: CircularProgressIndicator(color: AppTheme.primaryPurple),
             ),
           );
@@ -289,8 +303,8 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
           children: [
             _buildStreakCard(history),
             const SizedBox(height: 20),
-            const Text(
-              'Daily Check-ins',
+            Text(
+              'Daily Check-ins'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
@@ -331,7 +345,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Text(
                                 DateFormat('E').format(filteredHistory[index].date),
-                                style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                                style: TextStyle(color: AppTheme.textDimmed, fontSize: 10),
                               ),
                             );
                           }
@@ -347,7 +361,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
                         getTitlesWidget: (value, meta) {
                           return Text(
                             value.toInt().toString(),
-                            style: const TextStyle(color: AppTheme.textDimmed, fontSize: 10),
+                            style: TextStyle(color: AppTheme.textDimmed, fontSize: 10),
                           );
                         },
                       ),
@@ -449,7 +463,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _legendItem('Stress', AppTheme.red),
+        _legendItem('Mood', AppTheme.red),
         _legendItem('Energy', AppTheme.orange),
         _legendItem('Sleep', AppTheme.green),
       ],
@@ -465,7 +479,7 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(color: AppTheme.textWhite, fontSize: 12)),
+        Text(label, style: TextStyle(color: AppTheme.textWhite, fontSize: 12)),
       ],
     );
   }
@@ -527,21 +541,21 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               color: AppTheme.primaryPurple.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.local_fire_department, color: AppTheme.accentPurple, size: 24),
+            child: Icon(Icons.local_fire_department, color: AppTheme.accentPurple, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Check-in Streak',
                   style: TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.w600, fontSize: 15),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   streak == 0 ? 'Start your streak today.' : '$streak day${streak == 1 ? '' : 's'} in a row.',
-                  style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
+                  style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4),
                 ),
               ],
             ),
@@ -553,20 +567,42 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
 
   int _calculateStreak(List<MoodRecord> history) {
     if (history.isEmpty) return 0;
+    
     final sorted = List<MoodRecord>.from(history)
       ..sort((a, b) => a.date.compareTo(b.date));
+      
+    final uniqueDays = <DateTime>{};
+    for (var record in sorted) {
+      uniqueDays.add(DateTime(record.date.year, record.date.month, record.date.day));
+    }
+    
+    final uniqueSortedDays = uniqueDays.toList()..sort((a, b) => b.compareTo(a));
+    
     int streak = 0;
-    DateTime day = DateTime.now();
-    for (int i = sorted.length - 1; i >= 0; i--) {
-      final entryDay = DateTime(sorted[i].date.year, sorted[i].date.month, sorted[i].date.day);
-      final targetDay = DateTime(day.year, day.month, day.day);
-      if (entryDay == targetDay) {
-        streak += 1;
-        day = day.subtract(const Duration(days: 1));
-      } else if (entryDay.isBefore(targetDay)) {
+    final now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    DateTime yesterday = today.subtract(const Duration(days: 1));
+    
+    if (uniqueSortedDays.isEmpty) return 0;
+    
+    DateTime currentTarget;
+    if (uniqueSortedDays.first == today) {
+      currentTarget = today;
+    } else if (uniqueSortedDays.first == yesterday) {
+      currentTarget = yesterday;
+    } else {
+      return 0;
+    }
+    
+    for (var day in uniqueSortedDays) {
+      if (day == currentTarget) {
+        streak++;
+        currentTarget = currentTarget.subtract(const Duration(days: 1));
+      } else {
         break;
       }
     }
+    
     return streak;
   }
 
@@ -603,13 +639,13 @@ class _MoodPatternsScreenState extends State<MoodPatternsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textWhite,
                         fontWeight: FontWeight.w600,
                         fontSize: 15)),
                 const SizedBox(height: 4),
                 Text(desc,
-                    style: const TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4)),
+                    style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4)),
               ],
             ),
           ),

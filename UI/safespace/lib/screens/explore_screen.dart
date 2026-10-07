@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import 'article_screen.dart';
+import '../localization.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -34,15 +35,15 @@ class _ExploreScreenState extends State<ExploreScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 16),
-            const Text(
-              'Explore',
+            Text(
+              'Explore'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             
             // Psychoeducation Cards
-            const Text(
-              'Psychoeducation',
+            Text(
+              'Psychoeducation'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 16),
@@ -105,7 +106,7 @@ Understanding the difference between stress and burnout helps people recognize w
             const SizedBox(height: 32),
 
             // Daily Challenges
-            const Text(
+            Text(
               'Daily Challenges',
               style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.w600),
             ),
@@ -155,9 +156,9 @@ Understanding the difference between stress and burnout helps people recognize w
               ),
             ),
             const Spacer(),
-            Text(title, style: const TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text(title, style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
+            Text(subtitle, style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
           ],
         ),
       ),
@@ -202,7 +203,7 @@ Understanding the difference between stress and burnout helps people recognize w
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(color: AppTheme.textGrey, fontSize: 13)),
+                Text(subtitle, style: TextStyle(color: AppTheme.textGrey, fontSize: 13)),
               ],
             ),
           ),

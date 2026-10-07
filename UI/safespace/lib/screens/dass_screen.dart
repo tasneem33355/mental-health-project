@@ -4,6 +4,7 @@ import '../data/dass_questions.dart';
 import '../data/app_state.dart';
 import 'dass_results_screen.dart';
 import '../services/api_service.dart';
+import '../localization.dart';
 
 class DassQuestionnaireScreen extends StatefulWidget {
   const DassQuestionnaireScreen({super.key});
@@ -18,10 +19,10 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
   final Map<int, int> _answers = {};
 
   final List<String> _options = [
-    'Did not apply to me at all',
-    'Applied to me to some degree',
-    'Applied to me to a considerable degree',
-    'Applied to me very much',
+    'Did not apply to me at all'.tr,
+    'Applied to me to some degree'.tr,
+    'Applied to me to a considerable degree'.tr,
+    'Applied to me very much'.tr,
   ];
 
   void _onOptionSelected(int value) {
@@ -44,7 +45,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
     if (_answers.length < dassQuestions.length) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please answer all questions (${_answers.length}/${dassQuestions.length})'),
+          content: Text('Please answer all questions'.tr),
           backgroundColor: AppTheme.red,
         ),
       );
@@ -77,7 +78,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
+      builder: (context) => Center(child: CircularProgressIndicator(color: AppTheme.primaryPurple)),
     );
 
     // Prepare answers list (length 42)
@@ -133,17 +134,17 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
         backgroundColor: AppTheme.bgDark,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: AppTheme.textWhite),
+          icon: Icon(Icons.close, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Column(
+        title: Column(
           children: [
             Text(
               'Self Assessment',
               style: TextStyle(color: AppTheme.textWhite, fontSize: 16, fontWeight: FontWeight.w600),
             ),
             Text(
-              'DASS-42 Questionnaire',
+              'DASS-42 Questionnaire'.tr,
               style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
             ),
           ],
@@ -161,12 +162,12 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Question ${_currentIndex + 1} of ${dassQuestions.length}',
-                      style: const TextStyle(color: AppTheme.accentPurple, fontSize: 13, fontWeight: FontWeight.w600),
+                      '${'Question'.tr} ${_currentIndex + 1} ${'of'.tr} ${dassQuestions.length}',
+                      style: TextStyle(color: AppTheme.accentPurple, fontSize: 13, fontWeight: FontWeight.w600),
                     ),
                     Text(
                       '${(progress * 100).toInt()}%',
-                      style: const TextStyle(color: AppTheme.textGrey, fontSize: 13),
+                      style: TextStyle(color: AppTheme.textGrey, fontSize: 13),
                     ),
                   ],
                 ),
@@ -176,7 +177,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
                   child: LinearProgressIndicator(
                     value: progress,
                     backgroundColor: AppTheme.bgCardLight,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryPurple),
+                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryPurple),
                     minHeight: 6,
                   ),
                 ),
@@ -203,12 +204,12 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
                           color: AppTheme.primaryPurple.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.psychology_outlined, color: AppTheme.accentPurple),
+                        child: Icon(Icons.psychology_outlined, color: AppTheme.accentPurple),
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        question.text,
-                        style: const TextStyle(
+                        question.text.tr,
+                        style: TextStyle(
                           color: AppTheme.textWhite,
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -287,8 +288,8 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
                         curve: Curves.easeInOut,
                       );
                     },
-                    icon: const Icon(Icons.arrow_back, color: AppTheme.accentPurple),
-                    label: const Text('Previous', style: TextStyle(color: AppTheme.accentPurple)),
+                    icon: Icon(Icons.arrow_back, color: AppTheme.accentPurple),
+                    label: Text('Previous'.tr, style: TextStyle(color: AppTheme.accentPurple)),
                   )
                 else
                   const SizedBox(),
@@ -299,7 +300,7 @@ class _DassQuestionnaireScreenState extends State<DassQuestionnaireScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                     ),
-                    child: const Text('Finish'),
+                    child: Text('Finish'.tr),
                   )
                 else
                   const SizedBox(),

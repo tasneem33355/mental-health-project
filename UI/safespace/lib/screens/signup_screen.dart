@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../main.dart';
 import '../data/app_state.dart';
+import '../services/api_service.dart';
+import '../localization.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -24,24 +27,59 @@ class _SignupScreenState extends State<SignupScreen> {
   String? _passwordError;
 
   bool _isLoading = false;
+  StreamSubscription<AuthState>? _authSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _authSubscription = Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+      final session = data.session;
+      final event = data.event;
+      if (session != null && (event == AuthChangeEvent.signedIn || event == AuthChangeEvent.tokenRefreshed)) {
+        final user = session.user;
+        
+        AppState.userId = user.id.hashCode;
+        AppState.userEmail = user.email;
+        final String nameMeta = user.userMetadata?['full_name'] ?? user.userMetadata?['name'] ?? '';
+        AppState.userName = nameMeta.isNotEmpty ? nameMeta : (user.email?.split('@')[0] ?? 'User');
+        AppState.userPassword = '';
+        
+        await AppState.saveUserInfo();
+        
+        try {
+          await Supabase.instance.client.from('profiles').upsert({
+            'id': user.id,
+            'email': user.email,
+            'display_name': nameMeta,
+          });
+        } catch (e) {
+          debugPrint('Profiles table upsert skipped or failed: $e');
+        }
+
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/home');
+        }
+      }
+    });
+  }
 
   void _createAccount() async {
     setState(() {
       _nameError =
-          _nameCtrl.text.trim().isEmpty ? 'you must enter the Name' : null;
+          _nameCtrl.text.trim().isEmpty ? 'you must enter the Name'.tr : null;
 
       final emailText = _emailCtrl.text.trim();
       if (emailText.isEmpty) {
-        _emailError = 'you must enter the Email';
+        _emailError = 'you must enter the Email'.tr;
       } else if (!emailText.contains('@')) {
-        _emailError = 'Please enter a valid email address';
+        _emailError = 'Please enter a valid email address'.tr;
       } else {
         _emailError = null;
       }
 
 
       _passwordError = _passwordCtrl.text.trim().isEmpty
-          ? 'you must enter the Password'
+          ? 'you must enter the Password'.tr
           : null;
     });
 
@@ -51,20 +89,19 @@ class _SignupScreenState extends State<SignupScreen> {
         _passwordError == null) {
       setState(() => _isLoading = true);
       try {
-        final AuthResponse res = await Supabase.instance.client.auth.signUp(
-          email: _emailCtrl.text.trim(),
-          password: _passwordCtrl.text.trim(),
-          data: {'name': _nameCtrl.text.trim()},
+        final data = await ApiService.signup(
+          _nameCtrl.text.trim(),
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
         );
-        final user = res.user;
-        if (user != null) {
-          AppState.userId = user.id.hashCode;
-          AppState.userEmail = _emailCtrl.text.trim();
-          AppState.userName = _nameCtrl.text.trim();
-          AppState.userPassword = _passwordCtrl.text.trim();
-          await AppState.saveUserInfo();
-          if (mounted) Navigator.pushReplacementNamed(context, '/home');
-        }
+        
+        AppState.userId = data["user_id"];
+        AppState.userEmail = data["email"] ?? _emailCtrl.text.trim();
+        AppState.userName = data["name"] ?? _nameCtrl.text.trim();
+        AppState.userPassword = _passwordCtrl.text.trim();
+        await AppState.saveUserInfo();
+        
+        if (mounted) Navigator.pushReplacementNamed(context, '/home');
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -79,6 +116,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
+    _authSubscription?.cancel();
     _nameCtrl.dispose();
     _emailCtrl.dispose();
 
@@ -90,7 +128,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -129,8 +167,8 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Safespace',
+                    Text(
+                      'Safespace'.tr,
                       style: TextStyle(
                           color: AppTheme.textWhite,
                           fontSize: 20,
@@ -140,8 +178,8 @@ class _SignupScreenState extends State<SignupScreen> {
                 ),
                 const SizedBox(height: 36),
 
-                const Text(
-                  'Create account',
+                Text(
+                  'Create account'.tr,
                   style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 26,
@@ -152,14 +190,14 @@ class _SignupScreenState extends State<SignupScreen> {
 
                 _buildField(
                   controller: _nameCtrl,
-                  hint: 'Name',
+                  hint: 'Name'.tr,
                   icon: Icons.person_outline,
                   errorText: _nameError,
                 ),
                 const SizedBox(height: 14),
                 _buildField(
                   controller: _emailCtrl,
-                  hint: 'Email',
+                  hint: 'Email'.tr,
                   icon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   errorText: _emailError,
@@ -168,7 +206,7 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 14),
                 _buildField(
                   controller: _passwordCtrl,
-                  hint: 'Password',
+                  hint: 'Password'.tr,
                   icon: Icons.lock_outline,
                   obscure: _obscure,
                   errorText: _passwordError,
@@ -191,7 +229,36 @@ class _SignupScreenState extends State<SignupScreen> {
                     onPressed: _isLoading ? null : _createAccount,
                     child: _isLoading
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('Create Account'),
+                        : Text('Create Account'.tr),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // --- Google Sign-Up Button ---
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.08),
+                      foregroundColor: AppTheme.textWhite,
+                      side: BorderSide(color: AppTheme.accentPurple.withOpacity(0.3), width: 1),
+                    ),
+                    onPressed: () async {
+                      try {
+                        await Supabase.instance.client.auth.signInWithOAuth(
+                          OAuthProvider.google,
+                          redirectTo: 'io.supabase.flutter://login-callback',
+                        );
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(e.toString()), backgroundColor: AppTheme.red),
+                          );
+                        }
+                      }
+                    },
+                    icon: const Icon(Icons.login, size: 20),
+                    label: Text('Continue with Google'.tr),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -199,15 +266,15 @@ class _SignupScreenState extends State<SignupScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text('Already have an account?',
+                    Text('Already have an account?'.tr,
                         style:
                             TextStyle(color: AppTheme.textGrey, fontSize: 14)),
                     const SizedBox(width: 4),
                     GestureDetector(
                       onTap: () =>
                           Navigator.pushReplacementNamed(context, '/signin'),
-                      child: const Text(
-                        'Sign In',
+                      child: Text(
+                        'Sign In'.tr,
                         style: TextStyle(
                           color: AppTheme.accentPurple,
                           fontSize: 14,
@@ -239,20 +306,20 @@ class _SignupScreenState extends State<SignupScreen> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscure,
-      style: const TextStyle(color: AppTheme.textWhite),
+      style: TextStyle(color: AppTheme.textWhite),
       decoration: InputDecoration(
         hintText: hint,
         errorText: errorText,
-        errorStyle: const TextStyle(color: AppTheme.red),
+        errorStyle: TextStyle(color: AppTheme.red),
         prefixIcon: Icon(icon, color: AppTheme.textDimmed, size: 20),
         suffixIcon: suffix,
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+          borderSide: BorderSide(color: AppTheme.red, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.red, width: 1.5),
+          borderSide: BorderSide(color: AppTheme.red, width: 1.5),
         ),
       ),
     );

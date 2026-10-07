@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'data/app_state.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -19,10 +20,13 @@ import 'screens/assessment_screen.dart';
 import 'screens/assessment_intro_screen.dart';
 import 'screens/settings_screen.dart';
 
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'localization.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
+    SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
     ),
@@ -35,72 +39,137 @@ void main() async {
   );
 
   await AppState.init();
+  await Loc.init();
   runApp(const SafespaceApp());
 }
 
-class SafespaceApp extends StatelessWidget {
+class SafespaceApp extends StatefulWidget {
   const SafespaceApp({super.key});
 
   @override
+  State<SafespaceApp> createState() => _SafespaceAppState();
+}
+
+class _SafespaceAppState extends State<SafespaceApp> {
+  @override
+  void initState() {
+    super.initState();
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLight = prefs.getBool('is_light_mode') ?? false;
+    AppTheme.themeNotifier.value = isLight ? ThemeMode.light : ThemeMode.dark;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Safespace',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      initialRoute: '/',
-      routes: {
-        '/': (ctx) => const SplashScreen(),
-        '/onboarding': (ctx) => const OnboardingScreen(),
-        '/signup': (ctx) => const SignupScreen(),
-        '/signin': (ctx) => const SigninScreen(),
-        '/home': (ctx) => const HomeScreen(),
-        '/mood-patterns': (ctx) => const MoodPatternsScreen(),
-        '/mood-questionnaire': (ctx) => const MoodQuestionnaireScreen(),
-        '/adhd-exercise': (ctx) => const AdhdExerciseScreen(),
-        '/assessment': (ctx) => const AssessmentIntroScreen(),
-        '/assessment-start': (ctx) => const AssessmentScreen(),
-        '/profile': (ctx) => const ProfileScreen(),
-        '/morning-ritual': (ctx) =>
-            const RecommendationScreen(timeOfDay: 'Morning'),
-        '/nightly-unwind': (ctx) =>
-            const RecommendationScreen(timeOfDay: 'Evening'),
-        '/journal': (ctx) => const JournalScreen(),
-        '/bubble-pop': (ctx) => const BubblePopScreen(),
-        '/color-match': (ctx) => const ColorMatchScreen(),
-        '/settings': (ctx) => const SettingsScreen(),
+    return ValueListenableBuilder<Locale>(
+      valueListenable: Loc.localeNotifier,
+      builder: (context, locale, _) {
+        return ValueListenableBuilder<ThemeMode>(
+          valueListenable: AppTheme.themeNotifier,
+          builder: (context, currentMode, _) {
+            return MaterialApp(
+              title: 'Safespace'.tr,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.lightTheme,
+              darkTheme: AppTheme.darkTheme,
+              themeMode: currentMode,
+              locale: locale,
+              builder: (context, child) {
+                return Directionality(
+                  textDirection: Loc.isArabic ? TextDirection.rtl : TextDirection.ltr,
+                  child: child!,
+                );
+              },
+              supportedLocales: const [
+                Locale('en'),
+                Locale('ar'),
+              ],
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              initialRoute: '/',
+          routes: {
+            '/': (ctx) => const SplashScreen(),
+            '/onboarding': (ctx) => const OnboardingScreen(),
+            '/signup': (ctx) => const SignupScreen(),
+            '/signin': (ctx) => const SigninScreen(),
+            '/home': (ctx) => const HomeScreen(),
+            '/mood-patterns': (ctx) => const MoodPatternsScreen(),
+            '/mood-questionnaire': (ctx) => const MoodQuestionnaireScreen(),
+            '/adhd-exercise': (ctx) => const AdhdExerciseScreen(),
+            '/assessment': (ctx) => const AssessmentIntroScreen(),
+            '/assessment-start': (ctx) => const AssessmentScreen(),
+            '/profile': (ctx) => const ProfileScreen(),
+            '/morning-ritual': (ctx) =>
+                const RecommendationScreen(timeOfDay: 'Morning'),
+            '/nightly-unwind': (ctx) =>
+                const RecommendationScreen(timeOfDay: 'Evening'),
+            '/journal': (ctx) => const JournalScreen(),
+            '/bubble-pop': (ctx) => const BubblePopScreen(),
+            '/color-match': (ctx) => const ColorMatchScreen(),
+            '/settings': (ctx) => const SettingsScreen(),
+          },
+            );
+          },
+        );
       },
     );
   }
 }
 
 class AppTheme {
-  // Colors
-  static const Color bgDark = Color(0xFF0D0720);
-  static const Color bgCard = Color(0xFF1A1035);
-  static const Color bgCardLight = Color(0xFF221545);
-  static const Color primaryPurple = Color(0xFF7B3FE4);
-  static const Color accentPurple = Color(0xFF9B6FFF);
-  static const Color lightPurple = Color(0xFFB99EFF);
-  static const Color textWhite = Color(0xFFFFFFFF);
-  static const Color textGrey = Color(0xFFAA9EC8);
-  static const Color textDimmed = Color(0xFF6B5E8A);
-  static const Color green = Color(0xFF4CAF82);
-  static const Color orange = Color(0xFFFF8C42);
-  static const Color red = Color(0xFFFF5757);
-  static const Color yellow = Color(0xFFFFD166);
+  // Theme notifier
+  static final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.dark);
+
+  static bool get isDark => themeNotifier.value == ThemeMode.dark;
+
+  // Toggle theme and save choice to local storage
+  static Future<void> toggleTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (isDark) {
+      themeNotifier.value = ThemeMode.light;
+      await prefs.setBool('is_light_mode', true);
+    } else {
+      themeNotifier.value = ThemeMode.dark;
+      await prefs.setBool('is_light_mode', false);
+    }
+  }
+
+  // Colors dynamically mapping between Dark/Light modes based on brand identity guidelines
+  static Color get bgDark => isDark ? const Color(0xFF0D0720) : const Color(0xFFFAFAFA); // Soft Neutral (#FAFAFA)
+  static Color get bgCard => isDark ? const Color(0xFF1A1035) : const Color(0xFFFFFFFF); // White background cards
+  static Color get bgCardLight => isDark ? const Color(0xFF221545) : const Color(0xFFEEF3FC); // Soft tinted blue-grey card
+
+  static Color get primaryPurple => isDark ? const Color(0xFF7B3FE4) : const Color(0xFF7B3FE4); // Keeps core branding identity signature
+  static Color get accentPurple => isDark ? const Color(0xFF9B6FFF) : const Color(0xFF6CBCF5); // Calm Indigo (#6CBCF5)
+  static Color get lightPurple => isDark ? const Color(0xFFB99EFF) : const Color(0xFF4A60A0); // Deep Indigo (#4A60A0)
+
+  static Color get textWhite => isDark ? const Color(0xFFFFFFFF) : const Color(0xFF4A60A0); // Deep Indigo text
+  static Color get textGrey => isDark ? const Color(0xFFAA9EC8) : const Color(0xFF6778A5); // Soft Indigo body text
+  static Color get textDimmed => isDark ? const Color(0xFF6B5E8A) : const Color(0xFF909CBA); // Muted grey-blue text
+
+  static Color get green => isDark ? const Color(0xFF4CAF82) : const Color(0xFFA8E6CF); // Gentle Mint (#A8E6CF)
+  static Color get orange => isDark ? const Color(0xFFFF8C42) : const Color(0xFFFFAAA5); // Soft Coral (#FFAAA5)
+  static Color get red => isDark ? const Color(0xFFFF5757) : const Color(0xFFFF7E7E); // Pastel Red
+  static Color get yellow => isDark ? const Color(0xFFFFD166) : const Color(0xFFFFD166);
 
   static ThemeData get darkTheme => ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: bgDark,
         fontFamily: 'SF Pro Display',
-        colorScheme: const ColorScheme.dark(
+        colorScheme: ColorScheme.dark(
           primary: primaryPurple,
           secondary: accentPurple,
           surface: bgCard,
         ),
-        textTheme: const TextTheme(
-          displayLarge:
-              TextStyle(color: textWhite, fontWeight: FontWeight.bold),
+        textTheme: TextTheme(
+          displayLarge: TextStyle(color: textWhite, fontWeight: FontWeight.bold),
           bodyLarge: TextStyle(color: textWhite),
           bodyMedium: TextStyle(color: textGrey),
         ),
@@ -108,23 +177,55 @@ class AppTheme {
           style: ElevatedButton.styleFrom(
             backgroundColor: primaryPurple,
             foregroundColor: Colors.white,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             padding: const EdgeInsets.symmetric(vertical: 16),
-            textStyle:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: bgCardLight,
-          hintStyle: const TextStyle(color: textDimmed),
+          hintStyle: TextStyle(color: textDimmed),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      );
+
+  static ThemeData get lightTheme => ThemeData(
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: bgDark,
+        fontFamily: 'SF Pro Display',
+        colorScheme: ColorScheme.light(
+          primary: primaryPurple,
+          secondary: accentPurple,
+          surface: bgCard,
+        ),
+        textTheme: TextTheme(
+          displayLarge: TextStyle(color: textWhite, fontWeight: FontWeight.bold),
+          bodyLarge: TextStyle(color: textWhite),
+          bodyMedium: TextStyle(color: textGrey),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: primaryPurple,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: bgCardLight,
+          hintStyle: TextStyle(color: textDimmed),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../localization.dart';
 
 class ArticleScreen extends StatelessWidget {
   final String title;
@@ -31,7 +32,7 @@ class ArticleScreen extends StatelessWidget {
               ),
             ),
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
+              icon: Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -48,13 +49,13 @@ class ArticleScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: color.withOpacity(0.3)),
                     ),
-                    child: const Text('Psychoeducation',
+                    child: Text('Psychoeducation'.tr,
                         style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textWhite,
                         fontSize: 28,
                         fontWeight: FontWeight.bold),
@@ -62,7 +63,7 @@ class ArticleScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   Text(
                     content,
-                    style: const TextStyle(
+                    style: TextStyle(
                         color: AppTheme.textGrey,
                         fontSize: 16,
                         height: 1.6),
@@ -74,7 +75,7 @@ class ArticleScreen extends StatelessWidget {
                       color: AppTheme.bgCard,
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Icon(Icons.info_outline, color: AppTheme.accentPurple),
                         SizedBox(width: 16),

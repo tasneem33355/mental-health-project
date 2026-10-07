@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../main.dart';
+import '../localization.dart';
 
 class MeditationScreen extends StatefulWidget {
   const MeditationScreen({super.key});
@@ -54,13 +55,13 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
-        title: const Text('Meditation Complete', style: TextStyle(color: AppTheme.textWhite)),
-        content: const Text('You have completed your session. You should feel more calm and centered now.', 
+        title: Text('Meditation Complete'.tr, style: TextStyle(color: AppTheme.textWhite)),
+        content: Text('You have completed your session. You should feel more calm and centered now.'.tr, 
           style: TextStyle(color: AppTheme.textGrey)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Finish', style: TextStyle(color: AppTheme.accentPurple)),
+            child: Text('Finish'.tr, style: TextStyle(color: AppTheme.accentPurple)),
           ),
         ],
       ),
@@ -81,10 +82,10 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Meditation', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Meditation'.tr, style: TextStyle(color: AppTheme.textWhite)),
       ),
       body: Center(
         child: Padding(
@@ -93,13 +94,13 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (!_isMeditating) ...[
-                const Text(
-                  'Set Your Duration',
+                Text(
+                  'Set Your Duration'.tr,
                   style: TextStyle(color: AppTheme.textWhite, fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'How many minutes would you like to meditate today?',
+                Text(
+                  'How many minutes would you like to meditate today?'.tr,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 16),
                 ),
@@ -123,7 +124,7 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
                     padding: const EdgeInsets.symmetric(horizontal: 64, vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                   ),
-                  child: const Text('Start Meditation'),
+                  child: Text('Start Meditation'.tr),
                 ),
               ] else ...[
                 FadeTransition(
@@ -165,7 +166,7 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
                 const SizedBox(height: 64),
                 Text(
                   _formatTime(_secondsRemaining),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppTheme.textWhite,
                     fontSize: 48,
                     fontWeight: FontWeight.w300,
@@ -173,8 +174,8 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
-                  'Breathe deeply and let go...',
+                Text(
+                  'Breathe deeply and let go...'.tr,
                   style: TextStyle(color: AppTheme.textGrey, fontSize: 18, fontStyle: FontStyle.italic),
                 ),
                 const SizedBox(height: 80),
@@ -183,7 +184,7 @@ class _MeditationScreenState extends State<MeditationScreen> with SingleTickerPr
                     _timer?.cancel();
                     setState(() => _isMeditating = false);
                   },
-                  child: const Text('Cancel Session', style: TextStyle(color: AppTheme.red)),
+                  child: Text('Cancel Session'.tr, style: TextStyle(color: AppTheme.red)),
                 ),
               ],
             ],

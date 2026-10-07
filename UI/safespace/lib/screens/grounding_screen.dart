@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../localization.dart';
 
 class GroundingScreen extends StatefulWidget {
   const GroundingScreen({super.key});
@@ -90,10 +91,10 @@ class _GroundingScreenState extends State<GroundingScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('5-4-3-2-1 Grounding', style: TextStyle(color: AppTheme.textWhite, fontSize: 18)),
+        title: Text('5-4-3-2-1 Grounding'.tr, style: TextStyle(color: AppTheme.textWhite, fontSize: 18)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -151,7 +152,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
         Text(
           step['instruction'],
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppTheme.textWhite,
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -160,7 +161,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
         const SizedBox(height: 12),
         Text(
           step['hint'],
-          style: const TextStyle(color: AppTheme.textGrey, fontSize: 16),
+          style: TextStyle(color: AppTheme.textGrey, fontSize: 16),
         ),
         const SizedBox(height: 40),
         // Selection Counter
@@ -228,7 +229,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
               backgroundColor: canContinue ? AppTheme.primaryPurple : AppTheme.bgCardLight,
             ),
             child: Text(
-              _currentStep == 1 ? 'Finish' : 'Continue',
+              _currentStep == 1 ? 'Finish'.tr : 'Continue',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -247,13 +248,13 @@ class _GroundingScreenState extends State<GroundingScreen> {
             final TextEditingController customController = TextEditingController();
             return AlertDialog(
               backgroundColor: AppTheme.bgCard,
-              title: const Text('Add your own', style: TextStyle(color: AppTheme.textWhite)),
+              title: Text('Add your own', style: TextStyle(color: AppTheme.textWhite)),
               content: TextField(
                 controller: customController,
-                style: const TextStyle(color: AppTheme.textWhite),
+                style: TextStyle(color: AppTheme.textWhite),
                 decoration: InputDecoration(
                   hintText: 'Enter custom item',
-                  hintStyle: const TextStyle(color: AppTheme.textDimmed),
+                  hintStyle: TextStyle(color: AppTheme.textDimmed),
                   filled: true,
                   fillColor: AppTheme.bgDark,
                 ),
@@ -261,7 +262,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel', style: TextStyle(color: AppTheme.textGrey)),
+                  child: Text('Cancel'.tr, style: TextStyle(color: AppTheme.textGrey)),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -290,7 +291,7 @@ class _GroundingScreenState extends State<GroundingScreen> {
           borderRadius: BorderRadius.circular(30),
           border: Border.all(color: AppTheme.accentPurple.withOpacity(0.5), style: BorderStyle.solid),
         ),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.add, size: 16, color: AppTheme.accentPurple),
@@ -309,12 +310,12 @@ class _GroundingScreenState extends State<GroundingScreen> {
         children: [
           const Text('🌿', style: TextStyle(fontSize: 100)),
           const SizedBox(height: 32),
-          const Text(
+          Text(
             'You’re grounded',
             style: TextStyle(color: AppTheme.textWhite, fontSize: 32, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'You did a great job returning to the present moment.',
             textAlign: TextAlign.center,
             style: TextStyle(color: AppTheme.textGrey, fontSize: 16),
@@ -334,11 +335,11 @@ class _GroundingScreenState extends State<GroundingScreen> {
               onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.textGrey,
-                side: const BorderSide(color: AppTheme.textDimmed),
+                side: BorderSide(color: AppTheme.textDimmed),
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
-              child: const Text('Save Reflection'),
+              child: Text('Save Reflection'.tr),
             ),
           ),
         ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import '../main.dart';
 import '../services/api_service.dart';
+import '../localization.dart';
 
 class NlpPredictionScreen extends StatefulWidget {
   const NlpPredictionScreen({super.key});
@@ -89,10 +90,10 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('NLP Text Analysis', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('NLP Text Analysis'.tr, style: TextStyle(color: AppTheme.textWhite)),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -101,8 +102,8 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'AI Text Analysis',
+              Text(
+                'AI Text Analysis'.tr,
                 style: TextStyle(
                   color: AppTheme.textWhite,
                   fontSize: 24,
@@ -110,8 +111,8 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Powered by our custom NLP mental health model. Express your feelings, and our model will analyze the text for indicators of Depression, Anxiety, or Stress.',
+              Text(
+                  'Powered by our custom NLP mental health model. Express your feelings, and our model will analyze the text for indicators of Depression, Anxiety, or Stress.'.tr,
                 style: TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.5),
               ),
               const SizedBox(height: 32),
@@ -119,7 +120,7 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Type or speak your thoughts:', style: TextStyle(color: AppTheme.textGrey)),
+                  Text('Type or speak your thoughts:'.tr, style: TextStyle(color: AppTheme.textGrey)),
                   GestureDetector(
                     onTap: _listen,
                     child: Container(
@@ -147,9 +148,9 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
                 child: TextField(
                   controller: _textCtrl,
                   maxLines: 6,
-                  style: const TextStyle(color: AppTheme.textWhite),
-                  decoration: const InputDecoration(
-                    hintText: 'Type how you feel right now in Arabic or English...',
+                  style: TextStyle(color: AppTheme.textWhite),
+                  decoration: InputDecoration(
+                    hintText: 'Type how you feel right now in Arabic or English...'.tr,
                     hintStyle: TextStyle(color: AppTheme.textDimmed),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.all(16),
@@ -169,7 +170,7 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
                   ),
                   child: _isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Analyze Text', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      : Text('Analyze Text'.tr, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
               const SizedBox(height: 32),
@@ -178,12 +179,12 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(color: AppTheme.red.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: Text('Error: $_error', style: const TextStyle(color: AppTheme.red)),
+                  child: Text('Error: $_error', style: TextStyle(color: AppTheme.red)),
                 ),
 
               if (_predictionResults != null) ...[
-                const Text(
-                  'Analysis Results',
+                Text(
+                  'Analysis Results'.tr,
                   style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
@@ -199,13 +200,13 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
                     color: AppTheme.bgCardLight,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.info_outline, color: AppTheme.textDimmed),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          'These scores are raw probabilities from the NLP text model. A higher percentage indicates stronger semantic correlation with the condition.',
+                          'These scores are raw probabilities from the NLP text model. A higher percentage indicates stronger semantic correlation with the condition.'.tr,
                           style: TextStyle(color: AppTheme.textGrey, fontSize: 12),
                         ),
                       ),
@@ -228,7 +229,7 @@ class _NlpPredictionScreenState extends State<NlpPredictionScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.w600)),
+            Text(label, style: TextStyle(color: AppTheme.textWhite, fontWeight: FontWeight.w600)),
             Text('$percentage%', style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           ],
         ),

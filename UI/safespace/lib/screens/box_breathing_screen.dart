@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../localization.dart';
 
 class BoxBreathingScreen extends StatefulWidget {
   const BoxBreathingScreen({super.key});
@@ -12,7 +13,7 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  String _currentAction = 'Inhale';
+  String _currentAction = 'Inhale'.tr;
   int _secondsRemaining = 4;
 
   @override
@@ -28,16 +29,16 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
         setState(() {
           double val = _animation.value;
           if (val < 1) {
-            _currentAction = 'Inhale';
+            _currentAction = 'Inhale'.tr;
             _secondsRemaining = 4 - (val * 4).floor();
           } else if (val < 2) {
-            _currentAction = 'Hold';
+            _currentAction = 'Hold'.tr;
             _secondsRemaining = 4 - ((val - 1) * 4).floor();
           } else if (val < 3) {
-            _currentAction = 'Exhale';
+            _currentAction = 'Exhale'.tr;
             _secondsRemaining = 4 - ((val - 2) * 4).floor();
           } else {
-            _currentAction = 'Hold';
+            _currentAction = 'Hold'.tr;
             _secondsRemaining = 4 - ((val - 3) * 4).floor();
           }
         });
@@ -60,7 +61,7 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -68,13 +69,13 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
-            const Text(
-              'Box Breathing',
+            Text(
+              'Box Breathing'.tr,
               style: TextStyle(color: AppTheme.textWhite, fontSize: 28, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Follow the dot and synchronize your breath.',
+            Text(
+              'Follow the dot and synchronize your breath.'.tr,
               style: TextStyle(color: AppTheme.textGrey, fontSize: 16),
             ),
             const Spacer(),
@@ -126,7 +127,7 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
                         child: Container(
                           width: 20,
                           height: 20,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: AppTheme.accentPurple,
                             shape: BoxShape.circle,
                             boxShadow: [
@@ -144,7 +145,7 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
                     children: [
                       Text(
                         _currentAction,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.textWhite,
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -153,7 +154,7 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
                       const SizedBox(height: 8),
                       Text(
                         '$_secondsRemaining',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppTheme.accentPurple,
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
@@ -174,16 +175,16 @@ class _BoxBreathingScreenState extends State<BoxBreathingScreen>
                 color: AppTheme.bgCard,
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Column(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'What is Box Breathing?',
+                    'What is Box Breathing?'.tr,
                     style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 12),
                   Text(
-                    'Also known as four-square breathing, it is a simple technique used to reduce stress and improve focus. It involves breathing in, holding, breathing out, and holding again, each for an equal count of 4 seconds.',
+                    'Also known as four-square breathing, it is a simple technique used to reduce stress and improve focus. It involves breathing in, holding, breathing out, and holding again, each for an equal count of 4 seconds.'.tr,
                     style: TextStyle(color: AppTheme.textGrey, fontSize: 14, height: 1.5),
                   ),
                 ],

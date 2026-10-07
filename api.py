@@ -301,9 +301,12 @@ def analyze(payload: AnalysisRequest, db: Session = Depends(get_db)):
     survey_scores = predict_survey(shifted_answers)
     
     final_scores = fuse_scores(text_scores, survey_scores)
-    primary = max(final_scores, key=final_scores.get)
     clinical = calculate_dass_clinical_score(payload.survey_answers)
-    rec = get_recommendations(primary, final_scores[primary], payload.text)
+    
+    # Primary condition aligns with the fused score (AI + Survey)
+    primary = max(final_scores, key=final_scores.get)
+    
+    rec = get_recommendations(primary, final_scores[primary], payload.text, max_score=1.0)
     created_at_dt = datetime.utcnow()
     if payload.client_ts:
         try:
@@ -370,9 +373,12 @@ async def analyze_mental_health(request: AnalyzeRequest, db: Session = Depends(g
         survey_scores = predict_survey(shifted_answers)
         
         final_scores = fuse_scores(text_scores, survey_scores)
-        primary = max(final_scores, key=final_scores.get)
         clinical = calculate_dass_clinical_score(request.survey_answers)
-        rec = get_recommendations(primary, final_scores[primary], request.text)
+        
+        # Primary condition aligns with the fused score (AI + Survey)
+        primary = max(final_scores, key=final_scores.get)
+        
+        rec = get_recommendations(primary, final_scores[primary], request.text, max_score=1.0)
         created_at_dt = datetime.utcnow()
         if request.client_ts:
             try:
@@ -451,12 +457,17 @@ async def get_analyses_history(user_id: int = None, db: Session = Depends(get_db
         history = []
         for r in reversed(records):  # Reverse so oldest is first
             if r.clinical_scoring:
+                d = r.clinical_scoring.get("depression", {}).get("score", 0)
+                a = r.clinical_scoring.get("anxiety", {}).get("score", 0)
+                s = r.clinical_scoring.get("stress", {}).get("score", 0)
+                if d == 0 and a == 0 and s == 0:
+                    continue
                 history.append({
                     "id": r.id,
                     "date": r.created_at.strftime("%b %d"),
-                    "depression": r.clinical_scoring.get("depression", {}).get("score", 0),
-                    "anxiety": r.clinical_scoring.get("anxiety", {}).get("score", 0),
-                    "stress": r.clinical_scoring.get("stress", {}).get("score", 0),
+                    "depression": d,
+                    "anxiety": a,
+                    "stress": s,
                     "primary": r.primary_condition
                 })
         return history

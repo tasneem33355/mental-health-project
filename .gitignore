@@ -30,10 +30,20 @@ UI/safespace/linux/
 # Exceptions
 !UI/safespace/assets/**
 
-# System/Logs
+# System/Logs/Cache
 *.log
 .DS_Store
+__pycache__/
+*.pyc
+
+# Scratch & temporary dirs (contain test credentials)
+scratch/
+temp_space/
+temp_hf_space/
+clean_git_repo/
+updated_backend/
 
 # Files with secrets
 push_to_space.py
 scrub_rules.txt
+

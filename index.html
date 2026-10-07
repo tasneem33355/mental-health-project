@@ -106,6 +106,36 @@
       }
 
       .error { color: var(--danger); font-weight: 600; }
+      
+      .developers {
+        margin-top: 16px;
+        text-align: center;
+      }
+      .developers h2 {
+        font-size: 16px;
+        color: var(--accent);
+        margin-bottom: 12px;
+      }
+      .dev-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+      }
+      .dev-name {
+        background: #0b1512;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+        border: 1px solid var(--border);
+        color: var(--text);
+        text-decoration: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      a.dev-name:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 8px rgba(79, 209, 165, 0.3);
+      }
     </style>
   </head>
   <body>
@@ -148,6 +178,21 @@
       <section class="panel">
         <label>Response</label>
         <pre id="output">Waiting for request...</pre>
+      </section>
+
+      <section class="panel developers">
+        <h2>Developed By</h2>
+        <div class="dev-list">
+          <a href="https://www.linkedin.com/in/ali-monir-sakr/" target="_blank" class="dev-name">Ali Monir Sakr</a>
+          <span class="dev-name">Tasneem Mohamed</span>
+          <span class="dev-name">Mahmoud AboElNaga</span>
+          <span class="dev-name">Ahmad Behiry</span>
+          <span class="dev-name">Rowayda El-Bayar</span>
+          <a href="https://www.linkedin.com/in/mohamed-sabry-643643265/" target="_blank" class="dev-name">Mohamed Sabry</a>
+          <span class="dev-name">Ali Saad Ali</span>
+          <span class="dev-name">Jana Khaled Awad</span>
+          <span class="dev-name">Youssef Ehab Gomaa</span>
+        </div>
       </section>
     </main>
 

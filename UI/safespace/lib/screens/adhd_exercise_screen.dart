@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import '../main.dart';
+import '../localization.dart';
 
 class AdhdExerciseScreen extends StatefulWidget {
   const AdhdExerciseScreen({super.key});
@@ -10,68 +11,17 @@ class AdhdExerciseScreen extends StatefulWidget {
 }
 
 class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
-  // Timer state for "Read a Book"
-  int _timerSeconds = 2 * 60 + 30; // 2:30
+  int _timerSeconds = 150;
   bool _timerRunning = false;
   Timer? _timer;
 
   final List<_Task> _tasks = [
-    const _Task(
-        emoji: '💡',
-        title: 'Practice 1 new skill',
-        subtitle: 'Build - Every month',
-        color: Color(0xFF9B6FFF),
-        completed: true,
-        hasTimer: false),
-    const _Task(
-        emoji: '📚',
-        title: 'Read a Book',
-        subtitle: '02:30',
-        color: Color(0xFF4A90D9),
-        completed: false,
-        hasTimer: true),
-    const _Task(
-        emoji: '💳',
-        title: 'Pay your bills',
-        subtitle: 'Every month',
-        color: Color(0xFF4CAF82),
-        completed: false,
-        hasTimer: false),
-    const _Task(
-        emoji: '💳',
-        title: 'Pay your bills',
-        subtitle: 'Every month',
-        color: Color(0xFFFF5757),
-        completed: false,
-        hasTimer: false),
-    const _Task(
-        emoji: '🏠',
-        title: 'Clean up your Home',
-        subtitle: 'Every Week',
-        color: Color(0xFFFFD166),
-        completed: false,
-        hasTimer: false),
-    const _Task(
-        emoji: '💬',
-        title: 'Message Someone you love',
-        subtitle: 'Every Day',
-        color: Color(0xFFFF8C42),
-        completed: false,
-        hasTimer: false),
-    const _Task(
-        emoji: '🏃',
-        title: 'Exercise',
-        subtitle: 'Every Day',
-        color: Color(0xFF4CAF82),
-        completed: false,
-        hasTimer: false),
-    const _Task(
-        emoji: '🏃',
-        title: 'Exercise',
-        subtitle: 'Every Day',
-        color: Color(0xFF4A90D9),
-        completed: false,
-        hasTimer: false),
+    _Task('💡', 'Practice 1 new skill'.tr, 'Build - Every month'.tr, const Color(0xFF9B6FFF), true, false),
+    _Task('📚', 'Read a Book'.tr, '02:30', const Color(0xFF4A90D9), false, true),
+    _Task('💳', 'Pay your bills'.tr, 'Every month'.tr, const Color(0xFF4CAF82), false, false),
+    _Task('🏠', 'Clean up your Home'.tr, 'Every Week'.tr, const Color(0xFFFFD166), false, false),
+    _Task('💬', 'Message Someone you love'.tr, 'Every Day'.tr, const Color(0xFFFF8C42), false, false),
+    _Task('🏃', 'Exercise'.tr, 'Every Day'.tr, const Color(0xFF4CAF82), false, false),
   ];
 
   @override
@@ -84,17 +34,17 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
     if (_timerRunning) {
       _timer?.cancel();
       setState(() => _timerRunning = false);
-    } else {
-      setState(() => _timerRunning = true);
-      _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-        if (_timerSeconds > 0) {
-          setState(() => _timerSeconds--);
-        } else {
-          _timer?.cancel();
-          setState(() => _timerRunning = false);
-        }
-      });
+      return;
     }
+    setState(() => _timerRunning = true);
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (_timerSeconds > 0) {
+        setState(() => _timerSeconds--);
+      } else {
+        _timer?.cancel();
+        setState(() => _timerRunning = false);
+      }
+    });
   }
 
   String _formatTime(int seconds) {
@@ -110,34 +60,19 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
       appBar: AppBar(
         backgroundColor: AppTheme.bgDark,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            margin: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: AppTheme.bgCard,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.arrow_back_ios_new,
-                color: AppTheme.textWhite, size: 16),
-          ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
+          onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('ADHD Exercises',
-            style: TextStyle(
-                color: AppTheme.textWhite,
-                fontSize: 17,
-                fontWeight: FontWeight.w600)),
+        title: Text('ADHD Exercises'.tr, style: TextStyle(color: AppTheme.textWhite, fontSize: 17, fontWeight: FontWeight.w600)),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              'Short, practical exercises to help you focus, reset, and build steady habits.',
-              style: TextStyle(
-                  color: AppTheme.textGrey, fontSize: 13, height: 1.4),
-            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text('Short, practical exercises to help you focus, reset, and build steady habits.'.tr,
+                style: TextStyle(color: AppTheme.textGrey, fontSize: 13, height: 1.4)),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -154,27 +89,17 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
   }
 
   Widget _buildTaskItem(_Task task, int index) {
-    final isTimerTask = task.hasTimer;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.bgCard,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(color: AppTheme.bgCard, borderRadius: BorderRadius.circular(14)),
       child: Row(
         children: [
           Container(
             width: 40,
             height: 40,
-            decoration: BoxDecoration(
-              color: task.color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-                child: Text(task.emoji,
-                    style: const TextStyle(fontSize: 20))),
+            decoration: BoxDecoration(color: task.color.withOpacity(0.15), borderRadius: BorderRadius.circular(12)),
+            child: Center(child: Text(task.emoji, style: const TextStyle(fontSize: 20))),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -186,63 +111,39 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
                       color: AppTheme.textWhite,
                       fontWeight: FontWeight.w500,
                       fontSize: 14,
-                      decoration: task.completed
-                          ? TextDecoration.lineThrough
-                          : null,
+                      decoration: task.completed ? TextDecoration.lineThrough : null,
                       decorationColor: AppTheme.textGrey,
                     )),
                 const SizedBox(height: 2),
-                isTimerTask
+                task.hasTimer
                     ? GestureDetector(
                         onTap: _toggleTimer,
                         child: Row(
                           children: [
-                            Icon(
-                              _timerRunning
-                                  ? Icons.pause_circle_outline
-                                  : Icons.play_circle_outline,
-                              color: AppTheme.accentPurple,
-                              size: 16,
-                            ),
+                            Icon(_timerRunning ? Icons.pause_circle_outline : Icons.play_circle_outline,
+                                color: AppTheme.accentPurple, size: 16),
                             const SizedBox(width: 4),
-                            Text(
-                              _formatTime(_timerSeconds),
-                              style: const TextStyle(
-                                  color: AppTheme.accentPurple,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600),
-                            ),
+                            Text(_formatTime(_timerSeconds),
+                                style: TextStyle(color: AppTheme.accentPurple, fontSize: 13, fontWeight: FontWeight.w600)),
                           ],
                         ),
                       )
-                    : Text(task.subtitle,
-                        style: const TextStyle(
-                            color: AppTheme.textGrey, fontSize: 12)),
+                    : Text(task.subtitle, style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
               ],
             ),
           ),
-          // Toggle checkbox
           GestureDetector(
-            onTap: () => setState(() => _tasks[index] =
-                _Task.from(task, completed: !task.completed)),
+            onTap: () => setState(() => _tasks[index] = _tasks[index].copyWith(completed: !_tasks[index].completed)),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               width: 26,
               height: 26,
               decoration: BoxDecoration(
-                color: task.completed
-                    ? AppTheme.primaryPurple
-                    : Colors.transparent,
+                color: task.completed ? AppTheme.primaryPurple : Colors.transparent,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: task.completed
-                      ? AppTheme.primaryPurple
-                      : AppTheme.textDimmed,
-                ),
+                border: Border.all(color: task.completed ? AppTheme.primaryPurple : AppTheme.textDimmed),
               ),
-              child: task.completed
-                  ? const Icon(Icons.check, color: Colors.white, size: 14)
-                  : null,
+              child: task.completed ? const Icon(Icons.check, color: Colors.white, size: 14) : null,
             ),
           ),
         ],
@@ -254,8 +155,7 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.bgCard,
-        border:
-            Border(top: BorderSide(color: AppTheme.textDimmed.withOpacity(0.2))),
+        border: Border(top: BorderSide(color: AppTheme.textDimmed.withOpacity(0.2))),
       ),
       child: SafeArea(
         top: false,
@@ -264,10 +164,10 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(Icons.home_outlined, 'Home'),
-              _navItem(Icons.explore_outlined, 'Explore'),
-              _navItem(Icons.favorite_outline, 'Wellness'),
-              _navItem(Icons.person_outline, 'Profile'),
+              _navItem(Icons.home_outlined, 'Home'.tr),
+              _navItem(Icons.explore_outlined, 'Explore'.tr),
+              _navItem(Icons.favorite_outline, 'Wellness'.tr),
+              _navItem(Icons.person_outline, 'Profile'.tr),
             ],
           ),
         ),
@@ -281,8 +181,7 @@ class _AdhdExerciseScreenState extends State<AdhdExerciseScreen> {
       children: [
         Icon(icon, color: AppTheme.textDimmed, size: 24),
         const SizedBox(height: 4),
-        Text(label,
-            style: const TextStyle(color: AppTheme.textDimmed, fontSize: 11)),
+        Text(label, style: TextStyle(color: AppTheme.textDimmed, fontSize: 11)),
       ],
     );
   }
@@ -293,21 +192,7 @@ class _Task {
   final Color color;
   final bool completed, hasTimer;
 
-  const _Task({
-    required this.emoji,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    required this.completed,
-    required this.hasTimer,
-  });
+  _Task(this.emoji, this.title, this.subtitle, this.color, this.completed, this.hasTimer);
 
-  factory _Task.from(_Task t, {bool? completed}) => _Task(
-        emoji: t.emoji,
-        title: t.title,
-        subtitle: t.subtitle,
-        color: t.color,
-        completed: completed ?? t.completed,
-        hasTimer: t.hasTimer,
-      );
+  _Task copyWith({bool? completed}) => _Task(emoji, title, subtitle, color, completed ?? this.completed, hasTimer);
 }

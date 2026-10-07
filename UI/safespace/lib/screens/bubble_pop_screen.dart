@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import '../main.dart';
+import '../localization.dart';
 
 class BubblePopScreen extends StatefulWidget {
   const BubblePopScreen({super.key});
@@ -93,10 +94,10 @@ class _BubblePopScreenState extends State<BubblePopScreen> with TickerProviderSt
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Bubble Pop', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Bubble Pop'.tr, style: TextStyle(color: AppTheme.textWhite)),
         centerTitle: true,
       ),
       body: Stack(
@@ -106,14 +107,14 @@ class _BubblePopScreenState extends State<BubblePopScreen> with TickerProviderSt
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  'Take a deep breath.',
+                Text(
+                  'Take a deep breath.'.tr,
                   style: TextStyle(color: AppTheme.textDimmed, fontSize: 24, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   'Bubbles Popped: $_poppedCount',
-                  style: const TextStyle(color: AppTheme.accentPurple, fontSize: 16),
+                  style: TextStyle(color: AppTheme.accentPurple, fontSize: 16),
                 ),
               ],
             ),

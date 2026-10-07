@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
+import '../localization.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,16 +14,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
   final List<_OnboardingItem> _pages = [
-    const _OnboardingItem(
-      title: 'Safespace Helps You Understand How\nYou Feel And Guides You Toward\nHealthy Recovery',
+    _OnboardingItem(
+      title: 'Safespace Helps You Understand How\nYou Feel And Guides You Toward\nHealthy Recovery'.tr,
       imagePath: 'assets/onboarding_3.png',
     ),
-    const _OnboardingItem(
-      title: 'Build Lasting Healthy Habits\nThrough Guided Exercises And Mindfulness',
+    _OnboardingItem(
+      title: 'Build Lasting Healthy Habits\nThrough Guided Exercises And Mindfulness'.tr,
       imagePath: 'assets/onboarding_2.jpg',
     ),
-    const _OnboardingItem(
-      title: 'Track Your Mood Every Day\nAnd Gain Insights Into Your Emotional Patterns',
+    _OnboardingItem(
+      title: 'Track Your Mood Every Day\nAnd Gain Insights Into Your Emotional Patterns'.tr,
       imagePath: 'assets/onboarding_1.jpg',
     ),
   ];
@@ -37,7 +38,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -74,8 +75,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Text(
-                      'Safespace',
+                    Text(
+                      'Safespace'.tr,
                       style: TextStyle(
                         color: AppTheme.textWhite,
                         fontSize: 18,
@@ -127,7 +128,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: ElevatedButton(
                         onPressed: () =>
                             Navigator.pushReplacementNamed(context, '/signin'),
-                        child: const Text('Sign In'),
+                        child: Text('Sign In'.tr),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -138,14 +139,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             Navigator.pushReplacementNamed(context, '/signup'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.accentPurple,
-                          side: const BorderSide(color: AppTheme.accentPurple),
+                          side: BorderSide(color: AppTheme.accentPurple),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14)),
                           textStyle: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.w600),
                         ),
-                        child: const Text('Sign Up'),
+                        child: Text('Sign Up'.tr),
                       ),
                     ),
                   ],
@@ -178,7 +179,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Text(
             item.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               color: AppTheme.textWhite,
               fontSize: 18,
               fontWeight: FontWeight.w500,

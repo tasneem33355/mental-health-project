@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import '../main.dart';
+import '../localization.dart';
 
 class ColorMatchScreen extends StatefulWidget {
   const ColorMatchScreen({super.key});
@@ -84,22 +85,22 @@ class _ColorMatchScreenState extends State<ColorMatchScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.bgCard,
-        title: const Text('Game Over!', style: TextStyle(color: AppTheme.textWhite)),
-        content: Text('Your score: $_score', style: const TextStyle(color: AppTheme.textGrey)),
+        title: Text('Game Over!'.tr, style: TextStyle(color: AppTheme.textWhite)),
+        content: Text('Your score: $_score', style: TextStyle(color: AppTheme.textGrey)),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _startGame();
             },
-            child: const Text('Play Again', style: TextStyle(color: AppTheme.accentPurple)),
+            child: Text('Play Again'.tr, style: TextStyle(color: AppTheme.accentPurple)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: const Text('Exit', style: TextStyle(color: AppTheme.textGrey)),
+            child: Text('Exit', style: TextStyle(color: AppTheme.textGrey)),
           ),
         ],
       ),
@@ -114,10 +115,10 @@ class _ColorMatchScreenState extends State<ColorMatchScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
+          icon: Icon(Icons.arrow_back_ios_new, color: AppTheme.textWhite),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Color Match', style: TextStyle(color: AppTheme.textWhite)),
+        title: Text('Color Match'.tr, style: TextStyle(color: AppTheme.textWhite)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -134,15 +135,15 @@ class _ColorMatchScreenState extends State<ColorMatchScreen> {
             if (!_isPlaying)
               Column(
                 children: [
-                  const Icon(Icons.palette_outlined, size: 80, color: AppTheme.accentPurple),
+                  Icon(Icons.palette_outlined, size: 80, color: AppTheme.accentPurple),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Focus Challenge',
+                  Text(
+                    'Focus Challenge'.tr,
                     style: TextStyle(color: AppTheme.textWhite, fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Tap the button that matches the FONT COLOR of the word, not what the word says!',
+                  Text(
+                    'Tap the button that matches the FONT COLOR of the word, not what the word says!'.tr,
                     textAlign: TextAlign.center,
                     style: TextStyle(color: AppTheme.textGrey, fontSize: 16),
                   ),
@@ -153,7 +154,7 @@ class _ColorMatchScreenState extends State<ColorMatchScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                     ),
-                    child: const Text('Start Game'),
+                    child: Text('Start Game'.tr),
                   ),
                 ],
               )
@@ -217,8 +218,8 @@ class _ColorMatchScreenState extends State<ColorMatchScreen> {
       ),
       child: Column(
         children: [
-          Text(label, style: const TextStyle(color: AppTheme.textGrey, fontSize: 12)),
-          Text(value, style: const TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(label, style: TextStyle(color: AppTheme.textGrey, fontSize: 12)),
+          Text(value, style: TextStyle(color: AppTheme.textWhite, fontSize: 18, fontWeight: FontWeight.bold)),
         ],
       ),
     );
