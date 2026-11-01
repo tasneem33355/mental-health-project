@@ -1,5 +1,13 @@
 # 🧠 SafeSpace (مساحتك الآمنة)
 
+<p align="center">
+  <img
+    src="https://raw.githubusercontent.com/tasneem33355/mental-health-project/main/safespacelogo.png"
+    alt="SafeSpace Logo"
+    width="260"
+  >
+</p>
+
 <div align="center">
 
 ![SafeSpace Banner](https://img.shields.io/badge/Platform-Flutter%20%7C%20FastAPI%20%7C%20PyTorch-7b3fe4?style=for-the-badge)
